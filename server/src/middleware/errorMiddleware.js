@@ -1,0 +1,19 @@
+export const notFound = (req, res, next) => {
+  const error = new Error(`Not Found - ${req.originalUrl}`);
+   res.status(404);
+   next(error);
+};
+
+// Global Error Handling Middleware
+export const errorHandler = (err, req, res, next) => {
+  // If the status code is already set (e.g. 400 or 404), use it. Otherwise, default to 500 (Internal Server Error)
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let message = err.message;
+
+  // Send a structured JSON response back to the client
+  res.status(statusCode).json({
+    success: false,
+    message: message,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+  });
+};
