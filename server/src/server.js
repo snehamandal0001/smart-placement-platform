@@ -1,36 +1,40 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import jobRoutes from './routes/jobRoutes.js';
-import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import express from "express";
+import dotenv from "dotenv";
+import morgan from "morgan";
+import connectDB from "./config/db.js";
+import jobRoutes from "./routes/jobRoutes.js";
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 // Load environment variables
 dotenv.config();
 
+// Connect to MongoDB Database
+connectDB();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Standard Middlewares (Top of file)
-app.use(cors());
+// Standard Middlewares
+app.use(morgan("dev"));
 app.use(express.json());
 
 // Routes
-app.use('/api/jobs', jobRoutes);
+app.use("/api/jobs", jobRoutes);
 
 // Health Check Route
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.status(200).json({
-    success: true,
-    message: 'Placement Platform API is running smoothly',
+    status: "success",
+    message: "Placement Portal API is running",
     timestamp: new Date().toISOString()
   });
 });
 
-// --- Error Handling Middlewares (MUST BE AT THE BOTTOM) ---
-app.use(notFound);      // Catches undefined routes
-app.use(errorHandler);  // Formats all errors into clean JSON
+// Custom Error Handling Middlewares
+app.use(notFound);
+app.use(errorHandler);
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
