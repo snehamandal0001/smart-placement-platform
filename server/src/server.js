@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import connectDB from "./config/db.js";
 import jobRoutes from "./routes/jobRoutes.js";
+import authRoutes from './routes/authRoutes.js';
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 // Load environment variables
@@ -20,6 +21,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/jobs", jobRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health Check Route
 app.get("/api/health", (req, res) => {
@@ -36,5 +38,5 @@ app.use(errorHandler);
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server  is running on port ${PORT}`);
 });
