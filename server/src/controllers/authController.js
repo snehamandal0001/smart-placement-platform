@@ -106,3 +106,15 @@ export const loginUser = asyncHandler(async (req, res) => {
     }
   });
 });
+
+// @desc    Get logged in user profile
+// @route   GET /api/auth/me
+// @access  Private (Requires Token)
+export const getMe = asyncHandler(async (req, res) => {
+  // Because this route will run AFTER the protect middleware,
+  // req.user is already fetched from the database and guaranteed to exist!
+  res.status(200).json({
+    success: true,
+    data: req.user
+  });
+});
