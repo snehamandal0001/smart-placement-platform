@@ -7,17 +7,18 @@ import {
   deleteJob
 } from '../controllers/jobController.js';
 
+import { protect, authorize } from '../middleware/authMiddleware.js';
+
 const router = express.Router();
 
 // Routes for /api/jobs
 router.route('/')
   .get(getAllJobs)
-  .post(createJob);
-
+  .post(protect, authorize('recruiter'), createJob); // Protected & Authorized!
 // Routes for /api/jobs/:id
 router.route('/:id')
   .get(getJobById)
-  .put(updateJob)
-  .delete(deleteJob);
+  .put(protect, authorize('recruiter'), updateJob)    // Protected & Authorized!  .delete(deleteJob);
+  .delete(protect, authorize('recruiter'), deleteJob); // Protected & Authorized!
 
 export default router;

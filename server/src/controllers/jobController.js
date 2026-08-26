@@ -53,21 +53,16 @@ export const getJobById = asyncHandler(async (req, res) => {
   });
 });
 
+
 // @desc    Create a new job
 // @route   POST /api/jobs
-// @access  Public (Will be protected for Recruiters on Day 12)
+// @access  Private/Recruiter
 export const createJob = asyncHandler(async (req, res) => {
   const {
-    title,
-    company,
-    location,
-    salary,
-    description,
-    requiredSkills,
-    jobType
+    title, company, location, salary, description, requiredSkills, jobType
   } = req.body;
 
-  // Create document in MongoDB
+  // Create document in MongoDB and attach the logged-in user's ID
   const job = await Job.create({
     title,
     company,
@@ -75,7 +70,8 @@ export const createJob = asyncHandler(async (req, res) => {
     salary,
     description,
     requiredSkills,
-    jobType
+    jobType,
+    postedBy: req.user._id // <-- THIS IS NEW! It links the job to the recruiter.
   });
 
   res.status(201).json({
