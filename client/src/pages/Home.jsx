@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 
 const Home = () => {
   // 1. State to hold our jobs and loading status
@@ -11,7 +11,7 @@ const Home = () => {
     const fetchJobs = async () => {
       try {
         // 3. Make the API request to our backend (proxy handles the localhost:5000 part)
-        const response = await axios.get('/api/jobs');
+        const response = await api.get('/jobs');
         
         // 4. Save the jobs into our state
         setJobs(response.data.data);

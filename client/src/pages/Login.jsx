@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
+import { AuthContext } from '../context/AuthContext';
+
 
 const Login = () => {
   // 1. State for form inputs and UI feedback
@@ -12,6 +15,8 @@ const Login = () => {
   // 2. Initialize the navigate function to redirect users later
   const navigate = useNavigate();
 
+  const { login } = useContext(AuthContext);
+
   // 3. Handle the form submission
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevents the page from refreshing on submit
@@ -20,7 +25,8 @@ const Login = () => {
 
     try {
       // 4. Send the login request to our backend
-      const response = await axios.post('/api/auth/login', {
+
+      const response = await api.post('/auth/login', {
         email,
         password,
       });
@@ -29,12 +35,13 @@ const Login = () => {
       const { token, ...userData } = response.data.data;
 
       // 6. Save the token and user info to the browser's Local Storage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      // localStorage.setItem('token', token);
+      // localStorage.setItem('user', JSON.stringify(userData));
+      login(userData, token);
 
       // 7. Redirect the user to the Home page
       navigate('/');
-      
+
     } catch (err) {
       // Display the error message sent from our backend (or a fallback)
       setError(err.response?.data?.message || 'Something went wrong during login');
@@ -47,7 +54,7 @@ const Login = () => {
     <div className="min-h-[80vh] flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md border border-gray-100">
         <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">Welcome Back</h1>
-        
+
         {/* Display error message if login fails */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-sm">
