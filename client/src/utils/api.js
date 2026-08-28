@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', 
+  baseURL: 'https://smart-placement-platform-2l3x.onrender.com/api', 
 });
 
 api.interceptors.request.use(
