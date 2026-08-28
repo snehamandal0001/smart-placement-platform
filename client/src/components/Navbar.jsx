@@ -1,9 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();         // Clears local storage and context
+    navigate('/');    // Instantly redirects to the public home page
+  };
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -15,15 +21,16 @@ const Navbar = () => {
           
           {user ? (
             <>
-
               {user.role === 'recruiter' && (
                 <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
                   Dashboard
                 </Link>
               )}
-
               <span className="text-sm font-semibold text-gray-700">Hi, {user.name}</span>
-              <button onClick={logout} className="bg-red-50 text-red-600 px-4 py-2 rounded hover:bg-red-100 transition-colors">
+              <button 
+                onClick={handleLogout} 
+                className="bg-red-50 text-red-600 px-4 py-2 rounded hover:bg-red-100 transition-colors"
+              >
                 Logout
               </button>
             </>
