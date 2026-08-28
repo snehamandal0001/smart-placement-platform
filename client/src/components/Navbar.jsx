@@ -15,6 +15,13 @@ const Navbar = () => {
           
           {user ? (
             <>
+
+              {user.role === 'recruiter' && (
+                <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+                  Dashboard
+                </Link>
+              )}
+
               <span className="text-sm font-semibold text-gray-700">Hi, {user.name}</span>
               <button onClick={logout} className="bg-red-50 text-red-600 px-4 py-2 rounded hover:bg-red-100 transition-colors">
                 Logout
