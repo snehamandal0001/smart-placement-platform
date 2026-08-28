@@ -5,6 +5,11 @@ import { AuthContext } from '../context/AuthContext';
 const Home = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // NEW: Search and Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
   
   // Modal State
   const { user } = useContext(AuthContext);
@@ -48,16 +53,62 @@ const Home = () => {
     }
   };
 
+  // Filter the jobs based on user input
+  const filteredJobs = jobs.filter((job) => {
+    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          job.company.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesType = typeFilter ? job.jobType === typeFilter : true;
+    
+    const matchesLocation = locationFilter ? job.location.toLowerCase().includes(locationFilter.toLowerCase()) : true;
+    
+    return matchesSearch && matchesType && matchesLocation;
+  });
+
   return (
     <div className="p-8 max-w-6xl mx-auto relative">
       <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Latest Job Postings</h1>
       
+      {/* NEW: Search and Filter Bar */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row gap-4">
+        <input
+          type="text"
+          placeholder="Search by title or company..."
+          className="flex-1 px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        
+        <select 
+          className="px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 bg-white"
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+        >
+          <option value="">All Job Types</option>
+          <option value="Full-Time">Full-Time</option>
+          <option value="Part-Time">Part-Time</option>
+          <option value="Internship">Internship</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Filter by location..."
+          className="px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+          value={locationFilter}
+          onChange={(e) => setLocationFilter(e.target.value)}
+        />
+      </div>
+
       {loading ? (
         <p className="text-center text-xl text-gray-600">Loading jobs from database...</p>
+      ) : filteredJobs.length === 0 ? (
+        <p className="text-center text-gray-500 py-8 bg-white rounded shadow">No jobs match your search criteria.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map((job) => (
+          {/* IMPORTANT: Change jobs.map to filteredJobs.map */}
+          {filteredJobs.map((job) => (
             <div key={job._id} className="bg-white p-6 rounded-lg shadow border border-gray-100">
+              {/* ... KEEP YOUR EXISTING JOB CARD UI HERE ... */}
               <h2 className="text-xl font-bold text-blue-600">{job.title}</h2>
               <p className="text-gray-700 font-medium mt-1">{job.company}</p>
               <div className="mt-4 flex flex-col space-y-2 text-sm text-gray-600 mb-6">
