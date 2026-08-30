@@ -1,6 +1,7 @@
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import asyncHandler from '../middleware/asyncHandler.js';
+import sendEmail from '../utils/sendEmail.js';
 
 // @desc    Student applies for a job
 // @route   POST /api/applications/:jobId/apply
@@ -27,16 +28,38 @@ export const applyForJob = asyncHandler(async (req, res) => {
   }
 
   // 3. Create the application
-  const application = await Application.create({
+  const newApplication = await Application.create({
     job: jobId,
     applicant: req.user._id,
-    resumeUrl: req.body.resumeUrl || ''
+    resumeUrl: req.body.resumeUrl //|| ''
   });
+
+  await newApplication.save();
+  
+  try {
+
+      //const testEmailDestination = 'snehamandal0415@gmail.com';
+      console.log("1. Attempting to send email to:", testEmailDestination);
+ 
+    // For testing !
+    await sendEmail({
+     // email: testEmailDestination , 
+
+      email: req.user.email,  
+      subject: 'Application Received - PlacementHub',
+      message: `Hello ${req.user.name},\n\nYour job application and resume have been successfully submitted to the recruiter.\n\nBest of luck,\nThe PlacementHub Team`
+    });
+    console.log(`✅ Success! Email delivered to ${testEmailDestination}`);
+
+  } catch (error) {
+    console.log("3. Nodemailer caught an error:");
+    console.error('Email sending failed:', error);
+  }
 
   res.status(201).json({
     success: true,
-    message: 'Successfully applied for the job',
-    data: application
+    message: 'Application submitted successfully',
+    data: newApplication
   });
 });
 
