@@ -27,40 +27,75 @@ export const applyForJob = asyncHandler(async (req, res) => {
     throw new Error('You have already applied for this job');
   }
 
+  // // 3. Create the application
+  // const newApplication = await Application.create({
+  //   job: jobId,
+  //   applicant: req.user._id,
+  //   resumeUrl: req.body.resumeUrl //|| '' 
+  // });
+
+  // await newApplication.save();
+  
+  // try {
+
+  //     const testEmailDestination = 'snehamandal0415@gmail.com';
+  //     console.log("1. Attempting to send email to:", testEmailDestination);
+ 
+  //   // For testing !
+  //   await sendEmail({
+  //     email: testEmailDestination , 
+
+  //    // email: req.user.email,  
+  //     subject: 'Application Received - PlacementHub',
+  //     message: `Hello ${req.user.name},\n\nYour job application and resume have been successfully submitted to the recruiter.\n\nBest of luck,\nThe PlacementHub Team`
+  //   });
+  //   console.log(`✅ Success! Email delivered to ${testEmailDestination}`);
+
+  // } catch (error) {
+  //   console.log("3. Nodemailer caught an error:");
+  //   console.error('Email sending failed:', error);
+  // }
+
+  // res.status(201).json({
+  //   success: true,
+  //   message: 'Application submitted successfully',
+  //   data: newApplication
+  // });
+
+
+
   // 3. Create the application
   const newApplication = await Application.create({
     job: jobId,
     applicant: req.user._id,
-    resumeUrl: req.body.resumeUrl //|| ''
+    resumeUrl: req.body.resumeUrl
   });
 
   await newApplication.save();
-  
-  try {
 
-      const testEmailDestination = 'snehamandal0415@gmail.com';
-      console.log("1. Attempting to send email to:", testEmailDestination);
- 
-    // For testing !
-    await sendEmail({
-      email: testEmailDestination , 
-
-     // email: req.user.email,  
-      subject: 'Application Received - PlacementHub',
-      message: `Hello ${req.user.name},\n\nYour job application and resume have been successfully submitted to the recruiter.\n\nBest of luck,\nThe PlacementHub Team`
-    });
-    console.log(`✅ Success! Email delivered to ${testEmailDestination}`);
-
-  } catch (error) {
-    console.log("3. Nodemailer caught an error:");
-    console.error('Email sending failed:', error);
-  }
-
+  // 4. Send the success response to the frontend INSTANTLY
   res.status(201).json({
     success: true,
     message: 'Application submitted successfully',
     data: newApplication
   });
+
+  // 5. Fire-and-Forget Email: Notice there is NO 'await' keyword here!
+  // The server will handle this in the background after the user already sees success.
+
+  const testEmailDestination = 'snehamandal0415@gmail.com';
+
+  sendEmail({
+    email: testEmailDestination,
+    subject: 'Application Received - PlacementHub',
+    message: `Hello ${req.user.name},\n\nYour job application and resume have been successfully submitted.`
+  }).then(() => {
+    console.log("✅ Background email sent successfully to", testEmailDestination);
+  }).catch((error) => {
+    console.error("❌ Background email failed:", error);
+  });
+
+
 });
 
 // @desc    Recruiter views applications for a specific job
