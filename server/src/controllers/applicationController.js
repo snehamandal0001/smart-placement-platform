@@ -38,14 +38,14 @@ export const applyForJob = asyncHandler(async (req, res) => {
   
   try {
 
-      //const testEmailDestination = 'snehamandal0415@gmail.com';
+      const testEmailDestination = 'snehamandal0415@gmail.com';
       console.log("1. Attempting to send email to:", testEmailDestination);
  
     // For testing !
     await sendEmail({
-     // email: testEmailDestination , 
+      email: testEmailDestination , 
 
-      email: req.user.email,  
+     // email: req.user.email,  
       subject: 'Application Received - PlacementHub',
       message: `Hello ${req.user.name},\n\nYour job application and resume have been successfully submitted to the recruiter.\n\nBest of luck,\nThe PlacementHub Team`
     });
