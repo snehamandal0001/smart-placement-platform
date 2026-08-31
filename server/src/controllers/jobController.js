@@ -1,11 +1,11 @@
 import Job from '../models/Job.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
-// @desc    Get all jobs (with optional search and skill filtering)
+// @desc    Get all jobs (with optional search and skill filtering and pagination)
 // @route   GET /api/jobs
 // @access  Public
 export const getAllJobs = asyncHandler(async (req, res) => {
-  const { keyword, location, jobType } = req.query;
+  const { keyword, location, jobType, page: reqPage } = req.query;
 
   // Build a dynamic query filter object
   let query = {};
@@ -26,15 +26,33 @@ export const getAllJobs = asyncHandler(async (req, res) => {
     query.jobType = jobType;
   }
 
-  // Fetch jobs sorted by newest first (-createdAt)
-  const jobs = await Job.find(query).sort({ createdAt: -1 });
+  // Pagination Math
+  const page = parseInt(reqPage) || 1;
+  const limit = 8; // Number of jobs to show per page
+  const skip = (page - 1) * limit;
+
+  // Fetch jobs using the filter query PLUS skip and limit
+  const jobs = await Job.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+    // Count total jobs that MATCH THE SEARCH to calculate total pages
+  const totalJobs = await Job.countDocuments(query);
+  const totalPages = Math.ceil(totalJobs / limit);
 
   res.status(200).json({
     success: true,
     count: jobs.length,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalJobs
+    },
     data: jobs
   });
 });
+
 
 // @desc    Get single job by ID
 // @route   GET /api/jobs/:id
