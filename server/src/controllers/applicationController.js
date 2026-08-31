@@ -26,44 +26,7 @@ export const applyForJob = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('You have already applied for this job');
   }
-
-  // // 3. Create the application
-  // const newApplication = await Application.create({
-  //   job: jobId,
-  //   applicant: req.user._id,
-  //   resumeUrl: req.body.resumeUrl //|| '' 
-  // });
-
-  // await newApplication.save();
-  
-  // try {
-
-  //     const testEmailDestination = 'snehamandal0415@gmail.com';
-  //     console.log("1. Attempting to send email to:", testEmailDestination);
  
-  //   // For testing !
-  //   await sendEmail({
-  //     email: testEmailDestination , 
-
-  //    // email: req.user.email,  
-  //     subject: 'Application Received - PlacementHub',
-  //     message: `Hello ${req.user.name},\n\nYour job application and resume have been successfully submitted to the recruiter.\n\nBest of luck,\nThe PlacementHub Team`
-  //   });
-  //   console.log(`✅ Success! Email delivered to ${testEmailDestination}`);
-
-  // } catch (error) {
-  //   console.log("3. Nodemailer caught an error:");
-  //   console.error('Email sending failed:', error);
-  // }
-
-  // res.status(201).json({
-  //   success: true,
-  //   message: 'Application submitted successfully',
-  //   data: newApplication
-  // });
-
-
-
   // 3. Create the application
   const newApplication = await Application.create({
     job: jobId,
@@ -80,13 +43,12 @@ export const applyForJob = asyncHandler(async (req, res) => {
     data: newApplication
   });
 
-  // 5. Fire-and-Forget Email: Notice there is NO 'await' keyword here!
-  // The server will handle this in the background after the user already sees success.
+  // 5. Fire-and-Forget Email
 
   const testEmailDestination = 'snehamandal0415@gmail.com';
 
   sendEmail({
-    email: testEmailDestination,
+    email: testEmailDestination,   // SANDBOX MODE  email: req.user.email,  (when req.user is a valid mail)
     subject: 'Application Received - PlacementHub',
     message: `Hello ${req.user.name},\n\nYour job application and resume have been successfully submitted.`
   }).then(() => {

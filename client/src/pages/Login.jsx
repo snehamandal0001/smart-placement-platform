@@ -35,8 +35,6 @@ const Login = () => {
       const { token, ...userData } = response.data.data;
 
       // 6. Save the token and user info to the browser's Local Storage
-      // localStorage.setItem('token', token);
-      // localStorage.setItem('user', JSON.stringify(userData));
       login(userData, token);
 
       // 7. Redirect the user to the Home page
