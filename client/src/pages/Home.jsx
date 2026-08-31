@@ -68,7 +68,7 @@ const Home = () => {
       const response = await api.post(`/applications/${selectedJob._id}/apply`, {
         resumeUrl,
       });
-      setFeedbackMessage(response.data.message); // Success message
+      setFeedbackMessage(response.data.message); // Success messages
     } catch (err) {
       setFeedbackMessage(err.response?.data?.message || 'Failed to apply.'); // Error message
     }
