@@ -24,6 +24,11 @@
 
 import nodemailer from 'nodemailer';
 
+import dns from 'dns';
+
+// Force Node.js to use standard IPv4 addresses instead of IPv6
+dns.setDefaultResultOrder('ipv4first');
+
 const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
