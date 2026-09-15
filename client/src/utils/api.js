@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
 baseURL: 'https://smart-placement-platform-2l3x.onrender.com/api', // deployment url!
-// baseURL: 'http://localhost:5000/api', // local URL for testing!
+//baseURL: 'http://localhost:5000/api', // local URL for testing!
 });
 
 api.interceptors.request.use(

@@ -4,6 +4,7 @@ import morgan from "morgan";
 import connectDB from "./config/db.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import applicationRoutes from './routes/applicationRoutes.js'; 
 import cors from 'cors';
@@ -26,6 +27,7 @@ app.use(cors());
 app.use("/api/jobs", jobRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes); 
+app.use('/api/users', userRoutes);
 // Health Check Route
 app.get("/api/health", (req, res) => {
   res.status(200).json({
