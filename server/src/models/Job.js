@@ -43,11 +43,10 @@ const jobSchema = new mongoose.Schema(
       enum: ['Open', 'Closed'],
       default: 'Open'
     },
-    // Relational field: Links this job directly to the User (Recruiter) who posted it
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // References the 'User' model
-      required: false // We will set this to true when auth is implemented in Day 9
+      ref: 'User', 
+      required: false 
     }
   },
   {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
+import {Link} from 'react-router-dom';
 
 const Home = () => {
   const [jobs, setJobs] = useState([]);
@@ -134,6 +135,14 @@ const Home = () => {
                 >
                   Apply Now
                 </button>
+              ) : user?.role === 'recruiter' && user?._id === job.postedBy ? (
+                // NEW: Show "View Applications" button ONLY to the recruiter who posted it!
+                <Link 
+                  to={`/applications/job/${job._id}`}
+                  className="block text-center w-full bg-purple-600 text-white font-semibold py-2 rounded hover:bg-purple-700 transition-colors"
+                >
+                  View Applications
+                </Link>
               ) : (
                 <p className="text-sm text-gray-400 dark:text-gray-500 text-center italic">Log in as a student to apply</p>
               )}

@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
+import ViewApplications from './pages/ViewApplications';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
+              <Route path="/applications/job/:jobId" element={<ViewApplications />} />
             </Routes>
           </main>
         </BrowserRouter>

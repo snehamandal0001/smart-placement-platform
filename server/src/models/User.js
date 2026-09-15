@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 
-// Define the blueprint for User documents
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -12,7 +11,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, 'Please provide an email address'],
-      unique: true, // Prevents duplicate accounts with the same email
+      unique: true, 
       lowercase: true,
       trim: true,
       match: [
@@ -33,7 +32,6 @@ const userSchema = new mongoose.Schema(
       },
       default: 'student'
     },
-    // Student-specific fields
     skills: {
       type: [String], // Array of strings e.g. ["React", "Node.js"]
       default: []
@@ -48,7 +46,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
-    // Recruiter-specific fields
     companyName: {
       type: String,
       trim: true,
@@ -56,12 +53,10 @@ const userSchema = new mongoose.Schema(
     }
   },
   {
-    // Automatically creates `createdAt` and `updatedAt` date fields
     timestamps: true
   }
 );
 
-// Create the Mongoose model from the schema
 const User = mongoose.model('User', userSchema);
 
 export default User;

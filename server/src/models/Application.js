@@ -2,19 +2,16 @@ import mongoose from 'mongoose';
 
 const applicationSchema = new mongoose.Schema(
   {
-    // Reference to the Job applied for
     job: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Job',
       required: [true, 'Application must be associated with a job']
     },
-    // Reference to the Student who applied
     applicant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Application must belong to an applicant']
     },
-    // Application Lifecycle Stages
     status: {
       type: String,
       enum: {
@@ -23,12 +20,10 @@ const applicationSchema = new mongoose.Schema(
       },
       default: 'Applied'
     },
-    // Snapshot of resume at the time of application
     resumeUrl: {
       type: String,
       default: ''
     },
-    // Optional recruiter feedback or notes
     feedback: {
       type: String,
       default: ''
