@@ -2,6 +2,8 @@ import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 import sendEmail from '../utils/sendEmail.js';
+import { PDFParse } from 'pdf-parse';
+
 
 // @desc    Student applies for a job
 // @route   POST /api/applications/:jobId/apply
@@ -26,12 +28,38 @@ export const applyForJob = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('You have already applied for this job');
   }
+
+  console.log("--- NEW APPLICATION INCOMING ---");
+  console.log("Req.body:", req.body);
+  console.log("Req.file:", req.file ? "File received!" : "UNDEFINED - File missing!");
+
+  let extractedText = '';
+
+  // 3. Parse the PDF if a file was uploaded
+  if (req.file) {
+    try {
+      console.log("Attempting to parse PDF...");
+      
+      // V2 API: Instantiate the class and call getText()
+      const parser = new PDFParse({ data: req.file.buffer });
+      const pdfData = await parser.getText();
+      
+      console.log(`Success! Extracted ${pdfData.text.length} characters of text.`);
+      extractedText = pdfData.text;
+      
+      // Free up memory after parsing
+      await parser.destroy();
+    } catch (error) {
+      console.error("PDF Parsing failed:", error);
+    }
+  }
  
   // 3. Create the application
   const newApplication = await Application.create({
     job: jobId,
     applicant: req.user._id,
-    resumeUrl: req.body.resumeUrl
+    resumeUrl: req.body.resumeUrl,
+    resumeText: extractedText
   });
 
   await newApplication.save();

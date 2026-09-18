@@ -38,7 +38,7 @@ const Navbar = () => {
               )}
               {user.role === 'student' && (
                 <Link to="/profile" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  profile
+                  Profile
                 </Link>
               )}
               <span className="text-sm font-semibold text-gray-700">Hi, {user.name}</span>

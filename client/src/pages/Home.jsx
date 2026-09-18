@@ -21,6 +21,7 @@ const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [resumeUrl, setResumeUrl] = useState('');
+  const [resumeFile, setResumeFile] = useState(null); //Holds the actual PDF file
   const [feedbackMessage, setFeedbackMessage] = useState('');
 
   // Reset to Page 1 whenever the user types a new search or changes a filter
@@ -60,15 +61,24 @@ const Home = () => {
     setIsModalOpen(true);
     setFeedbackMessage('');
     setResumeUrl('');
+    setResumeFile(null);
   };
 
   // Submit the application to the backend
   const handleApply = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post(`/applications/${selectedJob._id}/apply`, {
-        resumeUrl,
-      });
+      //  Create a FormData object to handle the file upload
+      const formData = new FormData();
+      formData.append('resumeUrl', resumeUrl);
+      
+      if (resumeFile) {
+        formData.append('resumeFile', resumeFile);
+      }
+
+      //  Send it with the special multipart/form-data header
+      const response = await api.post(`/applications/${selectedJob._id}/apply`, formData
+      );
       setFeedbackMessage(response.data.message); // Success messages
     } catch (err) {
       setFeedbackMessage(err.response?.data?.message || 'Failed to apply.'); // Error message
@@ -207,6 +217,19 @@ const Home = () => {
                     onChange={(e) => setResumeUrl(e.target.value)}
                   />
                 </div>
+
+                {/* NEW: File Upload Input */}
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Upload PDF Resume (For AI Parsing)</label>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="w-full px-4 py-2 border dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-transparent dark:text-white"
+                    onChange={(e) => setResumeFile(e.target.files[0])}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Only .pdf files are supported.</p>
+                </div>
+
                 <button type="submit" className="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">
                   Submit Application
                 </button>

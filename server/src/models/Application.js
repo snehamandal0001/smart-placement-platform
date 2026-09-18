@@ -15,15 +15,17 @@ const applicationSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ['Applied', 'Shortlisted', 'Interview', 'Selected', 'Rejected'],
+        values: ['Pending','Applied', 'Shortlisted', 'Interview', 'Selected', 'Rejected'],
         message: 'Invalid application status'
       },
-      default: 'Applied'
+      default: 'Pending'
     },
     resumeUrl: {
       type: String,
+      required: true,
       default: ''
     },
+    resumeText: { type: String, default: '' }, //Stores the parsed PDF text
     feedback: {
       type: String,
       default: ''
@@ -34,8 +36,6 @@ const applicationSchema = new mongoose.Schema(
   }
 );
 
-// Prevent a student from applying to the SAME job more than once
-// Compound Unique Index: { job + applicant } must be unique together
 applicationSchema.index({ job: 1, applicant: 1 }, { unique: true });
 
 const Application = mongoose.model('Application', applicationSchema);
