@@ -24,6 +24,13 @@ const Home = () => {
   const [resumeFile, setResumeFile] = useState(null); //Holds the actual PDF file
   const [feedbackMessage, setFeedbackMessage] = useState('');
 
+  // State for editing jobs
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '', company: '', location: '', salary: '', description: ''
+  });
+
   // Reset to Page 1 whenever the user types a new search or changes a filter
   useEffect(() => {
     setCurrentPage(1);
@@ -98,6 +105,37 @@ const Home = () => {
     }
   };
 
+  // Opens the edit modal and pre-fills the form with the current job data
+  const openEditModal = (job) => {
+    setEditingJob(job);
+    setEditFormData({
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      salary: job.salary,
+      description: job.description
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // Submits the updated data to the backend
+  const handleUpdateJob = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.put(`/jobs/${editingJob._id}`, editFormData);
+      
+      // Instantly update the job in the React UI so it shows up immediately
+      setJobs(jobs.map((job) => (job._id === editingJob._id ? response.data.data : job)));
+      
+      setIsEditModalOpen(false);
+      setEditingJob(null);
+      alert("Job updated successfully!");
+    } catch (error) {
+      console.error("Failed to update job:", error);
+      alert(error.response?.data?.message || "Failed to update job");
+    }
+  };
+
   
 
   return (
@@ -166,6 +204,12 @@ const Home = () => {
                 >
                   View Applications
                 </Link>
+                <button 
+                    onClick={() => openEditModal(job)}
+                    className="px-4 bg-yellow-500 text-white font-semibold rounded hover:bg-yellow-600 transition-colors"
+                  >
+                    Edit
+                  </button>
                 <button 
                     onClick={() => handleDeleteJob(job._id)}
                     className="px-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition-colors"
@@ -264,6 +308,73 @@ const Home = () => {
           </div>
         </div>
       )}
+    
+    {/* EDIT JOB MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-xl">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Edit Job</h2>
+            
+            <form onSubmit={handleUpdateJob} className="space-y-4">
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Job Title</label>
+                <input
+                  type="text" required
+                  className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Company</label>
+                  <input
+                    type="text" required
+                    className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
+                    value={editFormData.company}
+                    onChange={(e) => setEditFormData({...editFormData, company: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Location</label>
+                  <input
+                    type="text" required
+                    className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
+                    value={editFormData.location}
+                    onChange={(e) => setEditFormData({...editFormData, location: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Salary</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
+                  value={editFormData.salary}
+                  onChange={(e) => setEditFormData({...editFormData, salary: e.target.value})}
+                />
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <button 
+                  type="submit" 
+                  className="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700"
+                >
+                  Save Changes
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 bg-gray-500 text-white py-2 rounded font-bold hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 

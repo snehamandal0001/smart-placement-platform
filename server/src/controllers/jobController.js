@@ -98,17 +98,26 @@ export const createJob = asyncHandler(async (req, res) => {
 
 // @desc    Update an existing job
 // @route   PUT /api/jobs/:id
-// @access  Public
+// @access  Private/Recruiter
 export const updateJob = asyncHandler(async (req, res) => {
-    const job = await Job.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  let job = await Job.findById(req.params.id);
 
   if (!job) {
     res.status(404);
     throw new Error(`Job not found with ID: ${req.params.id}`);
   }
+
+  // Security check: Only the recruiter who posted it can update it
+  if (job.postedBy.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('You are not authorized to update this job');
+  }
+
+  // Perform the update
+  job = await Job.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
 
   res.status(200).json({
     success: true,

@@ -18,7 +18,7 @@ router.route('/')
 // Routes for /api/jobs/:id
 router.route('/:id')
   .get(getJobById)
-  .put(protect, authorize('recruiter'), updateJob)    // Protected & Authorized!  .delete(deleteJob);
-  .delete(protect, authorize('recruiter'), deleteJob); // Protected & Authorized!
+  .put(protect, authorize('recruiter'), updateJob)    
+  .delete(protect, authorize('recruiter'), deleteJob); 
 
 export default router;
