@@ -1,5 +1,6 @@
 import Job from '../models/Job.js';
 import asyncHandler from '../middleware/asyncHandler.js';
+import Application from '../models/Application.js'; 
 
 // @desc    Get all jobs (with optional search and skill filtering and pagination)
 // @route   GET /api/jobs
@@ -7,10 +8,8 @@ import asyncHandler from '../middleware/asyncHandler.js';
 export const getAllJobs = asyncHandler(async (req, res) => {
   const { keyword, location, jobType, page: reqPage } = req.query;
 
-  // Build a dynamic query filter object
   let query = {};
 
-  // Case-insensitive search on title or company
   if (keyword) {
     query.$or = [
       { title: { $regex: keyword, $options: 'i' } },
@@ -28,7 +27,7 @@ export const getAllJobs = asyncHandler(async (req, res) => {
 
   // Pagination Math
   const page = parseInt(reqPage) || 1;
-  const limit = 8; // Number of jobs to show per page
+  const limit = 12; // Number of jobs to show per page
   const skip = (page - 1) * limit;
 
   // Fetch jobs using the filter query PLUS skip and limit
@@ -37,7 +36,6 @@ export const getAllJobs = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limit);
 
-    // Count total jobs that MATCH THE SEARCH to calculate total pages
   const totalJobs = await Job.countDocuments(query);
   const totalPages = Math.ceil(totalJobs / limit);
 
@@ -80,7 +78,6 @@ export const createJob = asyncHandler(async (req, res) => {
     title, company, location, salary, description, requiredSkills, jobType
   } = req.body;
 
-  // Create document in MongoDB and attach the logged-in user's ID
   const job = await Job.create({
     title,
     company,
@@ -89,7 +86,7 @@ export const createJob = asyncHandler(async (req, res) => {
     description,
     requiredSkills,
     jobType,
-    postedBy: req.user._id // <-- THIS IS NEW! It links the job to the recruiter.
+    postedBy: req.user._id 
   });
 
   res.status(201).json({
@@ -103,11 +100,7 @@ export const createJob = asyncHandler(async (req, res) => {
 // @route   PUT /api/jobs/:id
 // @access  Public
 export const updateJob = asyncHandler(async (req, res) => {
-  // findByIdAndUpdate takes 3 arguments:
-  // 1. ID to find
-  // 2. Data to update (req.body)
-  // 3. Options: new: true (returns updated doc), runValidators: true (runs schema validation rules)
-  const job = await Job.findByIdAndUpdate(req.params.id, req.body, {
+    const job = await Job.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true
   });
@@ -124,20 +117,32 @@ export const updateJob = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Delete a job
+// @desc    Delete a job and its applications
 // @route   DELETE /api/jobs/:id
-// @access  Public
+// @access  Private (Recruiter only)
 export const deleteJob = asyncHandler(async (req, res) => {
-  const job = await Job.findByIdAndDelete(req.params.id);
+  const job = await Job.findById(req.params.id);
 
   if (!job) {
     res.status(404);
     throw new Error(`Job not found with ID: ${req.params.id}`);
   }
 
+  // Security check: Only the recruiter who posted it can delete it
+  if (job.postedBy.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('You are not authorized to delete this job');
+  }
+
+  // 1. Delete the job itself
+  await job.deleteOne();
+
+  // 2. Cascade delete: Remove all applications tied to this job
+  await Application.deleteMany({ job: req.params.id });
+
   res.status(200).json({
     success: true,
-    message: 'Job removed from database',
+    message: 'Job and associated applications successfully deleted',
     data: {}
   });
 });

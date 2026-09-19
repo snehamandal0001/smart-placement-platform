@@ -85,6 +85,19 @@ const Home = () => {
     }
   };
 
+  const handleDeleteJob = async (jobId) => {
+    if (window.confirm("Are you sure you want to delete this job? This will also delete all student applications for it.")) {
+      try {
+        await api.delete(`/jobs/${jobId}`);
+        // Remove the deleted job from the local state instantly
+        setJobs(jobs.filter((job) => job._id !== jobId));
+      } catch (error) {
+        console.error("Failed to delete job:", error);
+        alert(error.response?.data?.message || "Failed to delete job");
+      }
+    }
+  };
+
   
 
   return (
@@ -146,13 +159,20 @@ const Home = () => {
                   Apply Now
                 </button>
               ) : user?.role === 'recruiter' && user?._id === job.postedBy ? (
-                // NEW: Show "View Applications" button ONLY to the recruiter who posted it!
-                <Link 
+                <div className="flex gap-2">
+                  <Link 
                   to={`/applications/job/${job._id}`}
-                  className="block text-center w-full bg-purple-600 text-white font-semibold py-2 rounded hover:bg-purple-700 transition-colors"
+                  className="block flex-1 text-center w-full bg-purple-600 text-white font-semibold py-2 rounded hover:bg-purple-700 transition-colors"
                 >
                   View Applications
                 </Link>
+                <button 
+                    onClick={() => handleDeleteJob(job._id)}
+                    className="px-4 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
               ) : (
                 <p className="text-sm text-gray-400 dark:text-gray-500 text-center italic">Log in as a student to apply</p>
               )}
