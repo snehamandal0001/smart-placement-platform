@@ -92,6 +92,8 @@ const Dashboard = () => {
           + Post New Job
         </button>
       </div>
+   <h3 className="text-2xl font-bold text-gray-800"> Showing Recently Published Jobs </h3>
+
 
       {loading ? (
         <p className="text-gray-600 text-lg">Loading your workspace...</p>
