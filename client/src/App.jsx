@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import ViewApplications from './pages/ViewApplications';
 import Profile from './pages/Profile';
+import Register from './pages/Register';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
               <Route path="/applications/job/:jobId" element={<ViewApplications />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/register" element={<Register/>} />
             </Routes>
           </main>
         </BrowserRouter>

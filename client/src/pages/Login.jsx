@@ -19,29 +19,18 @@ const Login = () => {
 
   // 3. Handle the form submission
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevents the page from refreshing on submit
+    e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      // 4. Send the login request to our backend
-
       const response = await api.post('/auth/login', {
         email,
         password,
       });
-
-      // 5. Extract the token and user data from the response
-      const { token, ...userData } = response.data.data;
-
-      // 6. Save the token and user info to the browser's Local Storage
-      login(userData, token);
-
-      // 7. Redirect the user to the Home page
+      login(response.data.data);
       navigate('/');
 
     } catch (err) {
-      // Display the error message sent from our backend (or a fallback)
       setError(err.response?.data?.message || 'Something went wrong during login');
     } finally {
       setLoading(false);
