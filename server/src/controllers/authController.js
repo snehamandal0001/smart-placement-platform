@@ -15,6 +15,8 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = asyncHandler(async (req, res) => {
+  console.log("--- INCOMING REGISTRATION DATA ---");
+  console.log(req.body);
   const { name, email, password, role } = req.body;
 
   // Validation: Ensure required fields are provided
@@ -36,6 +38,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password, 
+    role
   });
 
   // Send a success response WITH the token so they are instantly logged in
