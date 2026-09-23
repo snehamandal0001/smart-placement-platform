@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
 
@@ -68,7 +68,7 @@ const Login = () => {
               type="password"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
+              placeholder="•••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -82,6 +82,9 @@ const Login = () => {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+        Already have an account? <Link to="/register" className="text-blue-500 hover:underline">Sign Up</Link>
+      </p>
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ const Home = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [editFormData, setEditFormData] = useState({
-    title: '', company: '', location: '', salary: '', description: ''
+    title: '', company: '', location: '', salary: '', description: '', jobType:''
   });
 
   // Reset to Page 1 whenever the user types a new search or changes a filter
@@ -113,7 +113,8 @@ const Home = () => {
       company: job.company,
       location: job.location,
       salary: job.salary,
-      description: job.description
+      description: job.description,
+      jobType: job.jobType
     });
     setIsEditModalOpen(true);
   };
@@ -325,16 +326,17 @@ const Home = () => {
                   onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
                 />
               </div>
+               <div>
+                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Company</label>
+                <input
+                  type="text" required 
+                  className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
+                  value={editFormData.company}
+                  onChange={(e) => setEditFormData({...editFormData, company: e.target.value})}
+                />
+              </div> 
+
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Company</label>
-                  <input
-                    type="text" required
-                    className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
-                    value={editFormData.company}
-                    onChange={(e) => setEditFormData({...editFormData, company: e.target.value})}
-                  />
-                </div>
                 <div>
                   <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Location</label>
                   <input
@@ -344,8 +346,7 @@ const Home = () => {
                     onChange={(e) => setEditFormData({...editFormData, location: e.target.value})}
                   />
                 </div>
-              </div>
-              <div>
+                <div>
                 <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Salary</label>
                 <input
                   type="text"
@@ -354,7 +355,16 @@ const Home = () => {
                   onChange={(e) => setEditFormData({...editFormData, salary: e.target.value})}
                 />
               </div>
-
+              </div>
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Job Type</label>
+                <select 
+                className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                value={editFormData.jobType} onChange={(e) => setEditFormData({...editFormData, jobType: e.target.value})}
+              >
+                <option value="Full-Time">Full-Time</option>
+                <option value="Part-Time">Part-Time</option>
+                <option value="Internship">Internship</option>
+              </select>
               <div className="flex gap-4 mt-6">
                 <button 
                   type="submit" 

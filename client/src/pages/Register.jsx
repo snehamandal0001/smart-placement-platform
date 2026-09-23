@@ -53,6 +53,7 @@ const Register = () => {
             type="email" required
             className="w-full px-4 py-2 border rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             value={formData.email}
+            placeholder="user@example.com"
             onChange={(e) => setFormData({...formData, email: e.target.value})}
           />
         </div>
@@ -63,6 +64,7 @@ const Register = () => {
             type="password" required minLength="6"
             className="w-full px-4 py-2 border rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             value={formData.password}
+            placeholder="•••••••"
             onChange={(e) => setFormData({...formData, password: e.target.value})}
           />
         </div>
