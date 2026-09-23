@@ -92,7 +92,7 @@ const Dashboard = () => {
           + Post New Job
         </button>
       </div>
-   <h3 className="text-2xl font-bold text-gray-800"> Showing Recently Published Jobs </h3>
+   <h3 className="text-2xl font-bold text-gray-500"> Showing Recently Published Jobs </h3>
 
 
       {loading ? (
@@ -107,8 +107,10 @@ const Dashboard = () => {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="p-4 font-semibold text-gray-700">Job Title</th>
+                <th className="p-4 font-semibold text-gray-700">Company</th>
                 <th className="p-4 font-semibold text-gray-700">Location</th>
-                <th className="p-4 font-semibold text-gray-700">Type</th>
+                <th className="p-4 font-semibold text-gray-700">Salary</th>
+                <th className="p-4 font-semibold text-gray-700">Job Type</th>
                 <th className="p-4 font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
@@ -116,7 +118,9 @@ const Dashboard = () => {
               {myJobs.map((job) => (
                 <tr key={job._id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="p-4 font-medium text-blue-600">{job.title}</td>
+                  <td className="p-4 text-gray-600">{job.company}</td>
                   <td className="p-4 text-gray-600">{job.location}</td>
+                  <td className="p-4 text-gray-600">{job.salary}</td>
                   <td className="p-4 text-gray-600">{job.jobType}</td>
                   <td className="p-4">
                     <button 

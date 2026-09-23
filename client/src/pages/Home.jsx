@@ -184,10 +184,11 @@ const Home = () => {
           {jobs.map((job) => (
             <div key={job._id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700 transition-colors duration-300">
               <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">{job.title}</h2>
-              <p className="text-gray-700 dark:text-gray-300 font-medium mt-1">{job.company}</p>
+              <p className="text-gray-700 dark:text-gray-300 font-medium mt-1">Company: {job.company}</p>
               <div className="mt-4 flex flex-col space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
                 <p><span className="font-semibold dark:text-gray-200">Location:</span> {job.location}</p>
                 <p><span className="font-semibold dark:text-gray-200">Salary:</span> {job.salary}</p>
+                <p><span className="font-semibold dark:text-gray-200">Jobtype:</span> {job.jobType}</p>
               </div>
               
               {user?.role === 'student' ? (
