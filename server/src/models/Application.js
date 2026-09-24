@@ -14,7 +14,7 @@ const applicationSchema = new mongoose.Schema(
     },
     status: {
     type: String,
-    enum: ['Applied', 'Online Assessment', 'Interview', 'Offered', 'Rejected'],
+    enum: ['Applied', 'OA', 'Interview', 'Offered', 'Rejected'],
     default: 'Applied'
   },
     resumeUrl: {

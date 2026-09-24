@@ -11,14 +11,26 @@ const ViewApplications = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch both the applications AND the job details at the same time
         const [appRes, jobRes] = await Promise.all([
           api.get(`/applications/job/${jobId}`),
           api.get(`/jobs/${jobId}`)
         ]);
-        setApplications(appRes.data.data);
-        setJob(jobRes.data.data);
-      } catch (error) {
+        
+        const fetchedJob = jobRes.data.data;
+        const fetchedApps = appRes.data.data;
+
+        // Grade every applicant and attach the score
+        const scoredApplications = fetchedApps.map(app => {
+          const score = calculateMatchScore(app.resumeText, fetchedJob.requiredSkills);
+          return { ...app, matchScore: score };
+        });
+
+        scoredApplications.sort((a, b) => b.matchScore - a.matchScore);
+
+        setApplications(scoredApplications);
+        setJob(fetchedJob);
+      }
+      catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
@@ -49,6 +61,26 @@ const ViewApplications = () => {
         part
       )
     );
+  };
+
+// Calculate Match Percentage
+  const calculateMatchScore = (resumeText, requiredSkills) => {
+    if (!resumeText || !requiredSkills || requiredSkills.length === 0) return 0;
+
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let matchCount = 0;
+
+    requiredSkills.forEach(skill => {
+      const safeSkill = escapeRegExp(skill.trim());
+      if (!safeSkill) return;
+      
+      const regex = new RegExp(`(?:^|\\W)${safeSkill}(?:\\W|$)`, 'i');      
+      if (regex.test(resumeText)) {
+        matchCount++;
+      }
+    });
+    
+    return Math.round((matchCount / requiredSkills.length) * 100);
   };
 
   // Handle updating the student's status
@@ -109,6 +141,7 @@ const ViewApplications = () => {
                 <th className="p-4 border-b dark:border-gray-600">Email</th>
                 <th className="p-4 border-b dark:border-gray-600">CGPA</th>
                 <th className="p-4 border-b dark:border-gray-600">Resume Data</th>
+                <th className="p-4 border-b dark:border-gray-600">ATS Score</th>
                 <th className="p-4 border-b dark:border-gray-600">Status</th>
               </tr>
             </thead>
@@ -147,6 +180,16 @@ const ViewApplications = () => {
                     ) : (
                       <p className="mt-2 text-sm text-gray-500 italic">No PDF text extracted for this applicant.</p>
                     )}
+                  </td>
+
+                  <td className="p-4 border-b dark:border-gray-600 align-top">
+                    <div className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-sm border
+                     ${app.matchScore >= 75 ? 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/50 dark:text-green-400' : 
+                    app.matchScore >= 50 ? 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/50 dark:text-yellow-400' : 
+                    'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-400'}`}
+                    >
+                       {app.matchScore}% Match
+                    </div>
                   </td>
 
                     <td className="p-4 border-b dark:border-gray-600 align-top">
