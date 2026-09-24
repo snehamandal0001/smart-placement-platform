@@ -5,28 +5,79 @@ import api from '../utils/api';
 const ViewApplications = () => {
   const { jobId } = useParams();
   const [applications, setApplications] = useState([]);
+  const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchApplications = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get(`/applications/job/${jobId}`);
-        setApplications(response.data.data);
+        // Fetch both the applications AND the job details at the same time
+        const [appRes, jobRes] = await Promise.all([
+          api.get(`/applications/job/${jobId}`),
+          api.get(`/jobs/${jobId}`)
+        ]);
+        setApplications(appRes.data.data);
+        setJob(jobRes.data.data);
       } catch (error) {
-        console.error("Failed to fetch applications:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchApplications();
+    fetchData();
   }, [jobId]);
+
+  // Helper function to highlight specific skills in the resume text
+  const highlightKeywords = (text, keywords) => {
+    if (!text || !keywords || keywords.length === 0) return text;
+
+    // Escape regex special characters so they don't break the search
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const safeKeywords = keywords.map(escapeRegExp).filter(k => k.trim() !== '');
+    
+    if (safeKeywords.length === 0) return text;
+
+    const regex = new RegExp(`(${safeKeywords.join('|')})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) => 
+      regex.test(part) ? (
+        <span key={index} className="bg-yellow-300 text-black font-semibold px-1 rounded">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Job Applications</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Job Applications</h1>
+          {job && (
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Showing applicants for: <span className="font-semibold">{job.title}</span>
+            </p>
+          )}
+        </div>
         <Link to="/" className="text-blue-600 hover:underline font-medium">← Back to Jobs</Link>
       </div>
+
+      {/* Target Skills Banner */}
+      {job?.requiredSkills?.length > 0 && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-gray-800 border-l-4 border-blue-500 rounded">
+          <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Target Skills for this Job:</h3>
+          <div className="flex flex-wrap gap-2">
+            {job.requiredSkills.map((skill, index) => (
+              <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-center text-xl text-gray-600">Loading applicants...</p>
@@ -34,7 +85,7 @@ const ViewApplications = () => {
         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
           <p className="text-gray-500 text-lg">No students have applied for this position yet.</p>
         </div>
-      ) : (
+      ) : ( 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -42,30 +93,44 @@ const ViewApplications = () => {
                 <th className="p-4 border-b dark:border-gray-600">Applicant Name</th>
                 <th className="p-4 border-b dark:border-gray-600">Email</th>
                 <th className="p-4 border-b dark:border-gray-600">CGPA</th>
-                <th className="p-4 border-b dark:border-gray-600">Resume</th>
+                <th className="p-4 border-b dark:border-gray-600">Resume Data</th>
               </tr>
             </thead>
             <tbody>
               {applications.map((app) => (
                 <tr key={app._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <td className="p-4 border-b dark:border-gray-600 font-medium text-gray-800 dark:text-white">
+                  <td className="p-4 border-b dark:border-gray-600 font-medium text-gray-800 dark:text-white align-top">
                     {app.applicant.name}
                   </td>
-                  <td className="p-4 border-b dark:border-gray-600 text-gray-600 dark:text-gray-300">
+                  <td className="p-4 border-b dark:border-gray-600 text-gray-600 dark:text-gray-300 align-top">
                     {app.applicant.email}
                   </td>
-                  <td className="p-4 border-b dark:border-gray-600 text-gray-600 dark:text-gray-300">
+                  <td className="p-4 border-b dark:border-gray-600 text-gray-600 dark:text-gray-300 align-top">
                     {app.applicant.cgpa || 'N/A'}
                   </td>
-                  <td className="p-4 border-b dark:border-gray-600">
+                  <td className="p-4 border-b dark:border-gray-600 align-top w-1/2">
                     <a 
                       href={app.resumeUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 font-medium text-sm"
+                      className="inline-block mb-4 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 font-medium text-sm"
                     >
-                      View Resume
+                      View Resume URL 
                     </a>
+
+                    {app.resumeText ? (
+                      <div className="mt-2">
+                        <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                          Extracted Resume Text
+                        </h4>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded border dark:border-gray-600 text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed">
+                          {/* Pass the dynamic job skills array into the highlighter */}
+                          {highlightKeywords(app.resumeText, job?.requiredSkills || [])}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-gray-500 italic">No PDF text extracted for this applicant.</p>
+                    )}
                   </td>
                 </tr>
               ))}

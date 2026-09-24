@@ -7,11 +7,11 @@ const Home = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // NEW: Pagination State
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // NEW: Search and Filter State
+  // Search and Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
@@ -21,14 +21,21 @@ const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [resumeUrl, setResumeUrl] = useState('');
-  const [resumeFile, setResumeFile] = useState(null); //Holds the actual PDF file
+  const [resumeFile, setResumeFile] = useState(null); 
   const [feedbackMessage, setFeedbackMessage] = useState('');
+
+
+
+  const [formData, setFormData] = useState({
+    title: '', company: '', location: '', salary: '', description: '', jobType:'',
+    requiredSkills: '' 
+  });
 
   // State for editing jobs
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [editFormData, setEditFormData] = useState({
-    title: '', company: '', location: '', salary: '', description: '', jobType:''
+    title: '', company: '', location: '', salary: '', description: '', jobType:'', requiredSkills: ''
   });
 
   // Reset to Page 1 whenever the user types a new search or changes a filter
@@ -60,7 +67,7 @@ const Home = () => {
       }
     };
     fetchJobs();
-  }, [currentPage, searchQuery, typeFilter, locationFilter]); // Re-runs when ANY of these change
+  }, [currentPage, searchQuery, typeFilter, locationFilter]); 
 
   // Open modal and set the specific job
   const openModal = (job) => {
@@ -114,7 +121,8 @@ const Home = () => {
       location: job.location,
       salary: job.salary,
       description: job.description,
-      jobType: job.jobType
+      jobType: job.jobType,
+      requiredSkills: job.requiredSkills ? job.requiredSkills.join(', ') : ''
     });
     setIsEditModalOpen(true);
   };
@@ -123,9 +131,18 @@ const Home = () => {
   const handleUpdateJob = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.put(`/jobs/${editingJob._id}`, editFormData);
+      // Convert the comma-separated string into an array
+      const formattedSkills = editFormData.requiredSkills 
+        ? editFormData.requiredSkills.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
+        : [];
+
+      // Attach the formatted array to the payload
+      const payload = { ...editFormData, requiredSkills: formattedSkills };
+
+      // Send the payload instead of editFormData
+      const response = await api.put(`/jobs/${editingJob._id}`, payload);
       
-      // Instantly update the job in the React UI so it shows up immediately
+      // Instantly update the job in the React UI
       setJobs(jobs.map((job) => (job._id === editingJob._id ? response.data.data : job)));
       
       setIsEditModalOpen(false);
@@ -189,6 +206,7 @@ const Home = () => {
                 <p><span className="font-semibold dark:text-gray-200">Location:</span> {job.location}</p>
                 <p><span className="font-semibold dark:text-gray-200">Salary:</span> {job.salary}</p>
                 <p><span className="font-semibold dark:text-gray-200">Jobtype:</span> {job.jobType}</p>
+                <p><span className="font-semibold dark:text-gray-200">Description:</span> {job.description}</p>
               </div>
               
               {user?.role === 'student' ? (
@@ -359,13 +377,43 @@ const Home = () => {
               </div>
               <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Job Type</label>
                 <select 
-                className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                // className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                className = "w-full px-4 py-2 border dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-transparent dark:text-white"
                 value={editFormData.jobType} onChange={(e) => setEditFormData({...editFormData, jobType: e.target.value})}
               >
-                <option value="Full-Time">Full-Time</option>
-                <option value="Part-Time">Part-Time</option>
-                <option value="Internship">Internship</option>
+                <option value="Full-Time" className="dark:bg-gray-800">Full-Time</option>
+                <option value="Part-Time" className="dark:bg-gray-800">Part-Time</option>
+                <option value="Internship" className="dark:bg-gray-800">Internship</option>
+              
               </select>
+
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
+                  Required Skills (comma separated)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. React, Node.js, C++, Java"
+                  className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
+                  value={editFormData.requiredSkills}
+                  onChange={(e) => setEditFormData({...editFormData, requiredSkills: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
+                  Job Description
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. React, Node.js, C++, Java"
+                  rows="3"
+                  className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white"
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                />
+              </div>
+
+              <div className="flex gap-4 mt-6"></div>
               <div className="flex gap-4 mt-6">
                 <button 
                   type="submit" 
