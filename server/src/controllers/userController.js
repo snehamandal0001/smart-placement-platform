@@ -27,7 +27,7 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     user.email = req.body.email || user.email;
     user.resumeUrl = req.body.resumeUrl !== undefined ? req.body.resumeUrl : user.resumeUrl;
     user.skills = req.body.skills || user.skills;
-    user.cgpa = req.body.cgpa || user.cgpa;
+    user.cgpa = req.body.cgpa !== undefined ? req.body.cgpa : user.cgpa;
 
     if (req.body.password) {
       user.password = req.body.password; 
