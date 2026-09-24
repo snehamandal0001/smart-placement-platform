@@ -51,6 +51,21 @@ const ViewApplications = () => {
     );
   };
 
+  // Handle updating the student's status
+  const handleStatusChange = async (appId, newStatus) => {
+    try {
+      await api.put(`/applications/${appId}/status`, { status: newStatus });
+      
+      // Update the React UI instantly without refreshing the page
+      setApplications(applications.map(app => 
+        app._id === appId ? { ...app, status: newStatus } : app
+      ));
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      alert("Could not update status.");
+    }
+  };
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
@@ -94,6 +109,7 @@ const ViewApplications = () => {
                 <th className="p-4 border-b dark:border-gray-600">Email</th>
                 <th className="p-4 border-b dark:border-gray-600">CGPA</th>
                 <th className="p-4 border-b dark:border-gray-600">Resume Data</th>
+                <th className="p-4 border-b dark:border-gray-600">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +148,26 @@ const ViewApplications = () => {
                       <p className="mt-2 text-sm text-gray-500 italic">No PDF text extracted for this applicant.</p>
                     )}
                   </td>
+
+                    <td className="p-4 border-b dark:border-gray-600 align-top">
+                    <select
+                      value={app.status || 'Applied'}
+                      onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                      className={`px-3 py-1 rounded text-sm font-semibold outline-none cursor-pointer border-r-8 border-transparent
+                        ${app.status === 'Offered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                          app.status === 'Rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                          app.status === 'Interview' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                          app.status === 'OA' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                          'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}
+                    >
+                      <option value="Applied" className="bg-white text-black">Applied</option>
+                      <option value="OA" className="bg-white text-black">Online Assessment</option>
+                      <option value="Interview" className="bg-white text-black">Interview</option>
+                      <option value="Offered" className="bg-white text-black">Offered</option>
+                      <option value="Rejected" className="bg-white text-black">Rejected</option>
+                    </select>
+                  </td>
+                  
                 </tr>
               ))}
             </tbody>

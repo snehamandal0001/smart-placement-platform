@@ -116,3 +116,25 @@ export const getJobApplications = asyncHandler(async (req, res) => {
     data: applications
   });
 });
+
+// @desc    Update application status
+// @route   PUT /api/applications/:id/status
+// @access  Private (Recruiter only)
+export const updateApplicationStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+  const application = await Application.findById(req.params.id);
+
+  if (!application) {
+    res.status(404);
+    throw new Error('Application not found');
+  }
+
+  // Update the status and save to MongoDB
+  application.status = status;
+  await application.save();
+
+  res.status(200).json({
+    success: true,
+    data: application
+  });
+});

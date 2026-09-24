@@ -13,13 +13,10 @@ const applicationSchema = new mongoose.Schema(
       required: [true, 'Application must belong to an applicant']
     },
     status: {
-      type: String,
-      enum: {
-        values: ['Pending','Applied', 'Shortlisted', 'Interview', 'Selected', 'Rejected'],
-        message: 'Invalid application status'
-      },
-      default: 'Pending'
-    },
+    type: String,
+    enum: ['Applied', 'Online Assessment', 'Interview', 'Offered', 'Rejected'],
+    default: 'Applied'
+  },
     resumeUrl: {
       type: String,
       required: true,

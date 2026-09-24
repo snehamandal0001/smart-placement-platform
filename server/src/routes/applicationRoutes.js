@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer'; 
-import { applyForJob, getJobApplications } from '../controllers/applicationController.js';
+import { applyForJob, getJobApplications, updateApplicationStatus } from '../controllers/applicationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -13,5 +13,8 @@ router.post('/:jobId/apply', protect, authorize('student'), upload.single('resum
 
 // Recruiter Route: View applications
 router.get('/job/:jobId', protect, authorize('recruiter'), getJobApplications);
+
+// Recruiter Route: View applications
+router.put('/:id/status', protect, authorize('recruiter'), updateApplicationStatus);
 
 export default router;
