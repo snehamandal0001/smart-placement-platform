@@ -19,12 +19,14 @@ const Register = () => {
     e.preventDefault();
     setError('');
     try {
-      // Send registration data to the backend
       const response = await api.post('/auth/register', formData);
-      login(response.data.data); 
-      
-      // Redirect to home dashboard
-      navigate('/');
+      if (response.data.data.token) {
+        login(response.data.data); 
+        navigate('/');
+      } else {
+        alert('Registration successful! Please wait for TPO approval to log in.');
+        navigate('/login');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     }

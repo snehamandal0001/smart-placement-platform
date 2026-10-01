@@ -31,7 +31,6 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new Error('User already exists with this email');
   }
 
-  //  Create the new user in MongoDB
   const user = await User.create({
     name,
     email,
@@ -40,19 +39,32 @@ export const registerUser = asyncHandler(async (req, res) => {
     accountStatus: role === 'recruiter' ? 'Pending' : 'Approved'
   });
 
-  // Send a success response WITH the token so they are instantly logged in
   if (user) {
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id) 
-      }
-    });
+    if (user.role === 'recruiter') {
+      res.status(201).json({
+        success: true,
+        message: 'Registration successful! Your account is pending TPO approval.',
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    } else {
+      // Students get instantly logged in
+      res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          token: generateToken(user._id) 
+        }
+      });
+    }
   } else {
     res.status(400);
     throw new Error('Invalid user data received');
