@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
@@ -9,7 +9,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   
   const [myJobs, setMyJobs] = useState([]);
-  const [analytics, setAnalytics] = useState([]);
+  const [analytics, setAnalytics] = useState({ pipeline: [], avgCgpa: 0, topSkills: [] });
   const [loading, setLoading] = useState(true);
 
   // Applicants Modal State
@@ -105,40 +105,52 @@ const Dashboard = () => {
       </div>
       
       <h3 className="text-2xl font-bold text-gray-500 dark:text-gray-400 mb-6">Showing Recently Published Jobs</h3>
-       
-       {/* NEW: Analytics Dashboard Section */}
-      {!loading && analytics.length > 0 && (
+      
+      {/* Visual Analytics Dashboard */}
+      {!loading && analytics.pipeline?.length > 0 && (
         <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-4">Pipeline Overview</h3>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={analytics}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {analytics.map((entry, index) => {
-                    const colors = {
-                      'Applied': '#3b82f6', // blue
-                      'OA': '#eab308',      // yellow
-                      'Interview': '#a855f7',// purple
-                      'Offered': '#22c55e', // green
-                      'Rejected': '#ef4444' // red
-                    };
-                    return <Cell key={`cell-${index}`} fill={colors[entry.name] || '#8884d8'} />;
-                  })}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
-                />
-                <Legend verticalAlign="bottom" height={36} />
-              </PieChart>
-            </ResponsiveContainer>
+          
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200">Applicant Pool Analytics</h3>
+            <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
+              <span className="text-sm font-bold uppercase tracking-wide">Avg Applicant CGPA:</span>
+              <span className="text-xl font-black ml-2">{analytics.avgCgpa}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-72">
+            {/* Pie Chart: Status Pipeline */}
+            <div className="w-full h-full">
+              <h4 className="text-sm font-semibold text-gray-500 mb-2 text-center">Pipeline Distribution</h4>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={analytics.pipeline}
+                    cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value"
+                  >
+                    {analytics.pipeline.map((entry, index) => {
+                      const colors = { 'Applied': '#3b82f6', 'OA': '#eab308', 'Interview': '#a855f7', 'Offered': '#22c55e', 'Rejected': '#ef4444' };
+                      return <Cell key={`cell-${index}`} fill={colors[entry.name] || '#8884d8'} />;
+                    })}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                  <Legend verticalAlign="bottom" height={36} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Bar Chart: Most Common Skills */}
+            <div className="w-full h-full">
+              <h4 className="text-sm font-semibold text-gray-500 mb-2 text-center">Top Skills in Resume Pool</h4>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.topSkills} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="name" tick={{fontSize: 10}} interval={0} stroke="#9ca3af" />                  <YAxis allowDecimals={false} tick={{fontSize: 12}} stroke="#9ca3af" />
+                  <Tooltip cursor={{fill: 'rgba(59, 130, 246, 0.1)'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                  <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       )}

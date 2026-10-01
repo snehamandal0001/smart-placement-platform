@@ -150,11 +150,55 @@ export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
     { $match: { job: { $in: jobIds } } },
     { $group: { _id: '$status', count: { $sum: 1 } } }
   ]);
-
-  const formattedData = statusCounts.map(stat => ({
+  const pipelineData = statusCounts.map(stat => ({
     name: stat._id || 'Applied',
     value: stat.count
   }));
 
-  res.status(200).json({ success: true, data: formattedData });
+  //  Average CGPA & Top Skills using $lookup
+  const applicantStats = await Application.aggregate([
+    { $match: { job: { $in: jobIds } } },
+    { 
+      $lookup: {
+        from: 'users',
+        localField: 'applicant',
+        foreignField: '_id',
+        as: 'applicantInfo'
+      }
+    },
+    { $unwind: '$applicantInfo' },
+    {
+      $group: {
+        _id: null,
+        averageCgpa: { $avg: '$applicantInfo.cgpa' },
+        allSkills: { $push: '$applicantInfo.skills' }
+      }
+    }
+  ]);
+
+  let avgCgpa = 0;
+  let topSkills = [];
+
+  if (applicantStats.length > 0) {
+    avgCgpa = Math.round(applicantStats[0].averageCgpa * 100) / 100;
+
+    // Count the frequency of every skill in the resume pool
+    const skillMap = {};
+    applicantStats[0].allSkills.flat().forEach(skill => {
+      if (skill) {
+        const cleanSkill = skill.trim().toUpperCase();
+        skillMap[cleanSkill] = (skillMap[cleanSkill] || 0) + 1;
+      }
+    });
+
+    topSkills = Object.entries(skillMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }
+
+  res.status(200).json({ 
+    success: true, 
+    data: { pipeline: pipelineData, avgCgpa, topSkills } 
+  });
 });
