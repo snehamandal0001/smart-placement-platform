@@ -138,3 +138,23 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     data: application
   });
 });
+
+// @desc    Get recruiter analytics (status distribution)
+// @route   GET /api/applications/analytics/recruiter
+// @access  Private (Recruiter only)
+export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
+  const jobs = await Job.find({ postedBy: req.user._id }).select('_id');
+  const jobIds = jobs.map(job => job._id);
+
+  const statusCounts = await Application.aggregate([
+    { $match: { job: { $in: jobIds } } },
+    { $group: { _id: '$status', count: { $sum: 1 } } }
+  ]);
+
+  const formattedData = statusCounts.map(stat => ({
+    name: stat._id || 'Applied',
+    value: stat.count
+  }));
+
+  res.status(200).json({ success: true, data: formattedData });
+});

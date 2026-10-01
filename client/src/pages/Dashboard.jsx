@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
@@ -8,6 +9,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   
   const [myJobs, setMyJobs] = useState([]);
+  const [analytics, setAnalytics] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Applicants Modal State
@@ -33,18 +35,23 @@ const Dashboard = () => {
       navigate('/');
       return;
     }
-    const fetchMyJobs = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/jobs');
-        const recruiterJobs = response.data.data.filter((job) => job.postedBy === user._id);
+        const [jobsRes, statsRes] = await Promise.all([
+          api.get('/jobs'),
+          api.get('/applications/analytics/recruiter')
+        ]);
+        
+        const recruiterJobs = jobsRes.data.data.filter((job) => job.postedBy === user._id);
         setMyJobs(recruiterJobs);
+        setAnalytics(statsRes.data.data);
       } catch (error) {
-        console.error('Error fetching dashboard jobs:', error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchMyJobs();
+    fetchData();
   }, [user, navigate]);
 
   const handleViewApplicants = async (job) => {
@@ -98,6 +105,43 @@ const Dashboard = () => {
       </div>
       
       <h3 className="text-2xl font-bold text-gray-500 dark:text-gray-400 mb-6">Showing Recently Published Jobs</h3>
+       
+       {/* NEW: Analytics Dashboard Section */}
+      {!loading && analytics.length > 0 && (
+        <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-4">Pipeline Overview</h3>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={analytics}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {analytics.map((entry, index) => {
+                    const colors = {
+                      'Applied': '#3b82f6', // blue
+                      'OA': '#eab308',      // yellow
+                      'Interview': '#a855f7',// purple
+                      'Offered': '#22c55e', // green
+                      'Rejected': '#ef4444' // red
+                    };
+                    return <Cell key={`cell-${index}`} fill={colors[entry.name] || '#8884d8'} />;
+                  })}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                />
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-gray-600 text-lg">Loading your workspace...</p>
