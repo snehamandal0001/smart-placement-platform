@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema(
       },
       default: 'student'
     },
+    accountStatus: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Rejected'],
+    default: 'Approved' 
+  },
     skills: {
       type: [String], 
       default: []

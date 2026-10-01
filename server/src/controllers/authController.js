@@ -15,8 +15,6 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = asyncHandler(async (req, res) => {
-  console.log("--- INCOMING REGISTRATION DATA ---");
-  console.log(req.body);
   const { name, email, password, role } = req.body;
 
   // Validation: Ensure required fields are provided
@@ -38,7 +36,8 @@ export const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password, 
-    role
+    role,
+    accountStatus: role === 'recruiter' ? 'Pending' : 'Approved'
   });
 
   // Send a success response WITH the token so they are instantly logged in
@@ -78,6 +77,10 @@ export const loginUser = asyncHandler(async (req, res) => {
 
 // 3. Compare passwords using the exact method you wrote in User.js
   if (user && (await user.matchPassword(password))) {
+    if (user.role === 'recruiter' && user.accountStatus !== 'Approved') {
+    res.status(401);
+    throw new Error(`Your account is ${user.accountStatus.toLowerCase()}. Please wait for TPO approval.`);
+  }
     res.status(200).json({
       success: true,
       message: 'Login successful',
