@@ -3,7 +3,8 @@ import multer from 'multer';
 import { applyForJob,
      getJobApplications, 
      updateApplicationStatus,
-     getRecruiterAnalytics } from '../controllers/applicationController.js';
+     getRecruiterAnalytics,
+     getMyApplications } from '../controllers/applicationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -22,5 +23,8 @@ router.get('/job/:jobId', protect, authorize('recruiter'), getJobApplications);
 
 // Recruiter Route: View applications
 router.put('/:id/status', protect, authorize('recruiter'), updateApplicationStatus);
+
+// Student route to get their own applications
+router.get('/my-applications', protect, authorize('student'), getMyApplications);
 
 export default router;

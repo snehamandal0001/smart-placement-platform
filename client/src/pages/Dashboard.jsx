@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [analytics, setAnalytics] = useState({ pipeline: [], avgCgpa: 0, topSkills: [] });
   const [loading, setLoading] = useState(true);
+  const [scheduleDate, setScheduleDate] = useState('');
 
   // Applicants Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,6 +90,25 @@ const Dashboard = () => {
       setNewJob({ title: '', company: '', location: '', salary: '', jobType: 'Full-Time', requiredSkills: '', description: '' });
     } catch (error) {
       console.error('Error posting job:', error);
+    }
+  };
+
+  const handleStatusUpdate = async (applicationId, status, date) => {
+    try {
+      await api.put(`/applications/${applicationId}/status`, {
+        status,
+        interviewDate: date || null
+      });
+      
+      // Instantly update the local state so the UI reflects the change without reloading
+      setApplications(applications.map(app => 
+        app._id === applicationId ? { ...app, status, interviewDate: date } : app
+      ));
+      
+      alert('Interview scheduled successfully!');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to schedule interview.');
     }
   };
 
@@ -284,20 +304,41 @@ const Dashboard = () => {
              ) : (
                <ul className="space-y-3">
                  {applications.map(app => (
-                   <li key={app._id} className="p-4 border dark:border-gray-700 rounded flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
-                     <div>
-                       <p className="font-semibold text-gray-800 dark:text-white">{app.applicant.name}</p>
-                       <p className="text-sm text-gray-600 dark:text-gray-400">{app.applicant.email}</p>
-                     </div>
-                     <a 
-                       href={app.resumeUrl} 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm font-medium hover:bg-blue-200"
-                     >
-                       Open Resume
-                     </a>
-                   </li>
+                   <li key={app._id} className="p-4 border dark:border-gray-700 rounded flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-50 dark:bg-gray-700/50">
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-white">{app.applicant.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{app.applicant.email}</p>
+                      <p className="text-xs mt-1 font-bold text-blue-600 dark:text-blue-400">
+                        Current Status: {app.status || 'Applied'}
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-col gap-2 items-end w-full md:w-auto">
+                      <a 
+                        href={app.resumeUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm font-medium hover:bg-blue-200 w-full text-center md:w-auto"
+                      >
+                        Open Resume
+                      </a>
+                      
+                      {/* Scheduling UI */}
+                      <div className="flex gap-2 mt-2 w-full md:w-auto">
+                        <input 
+                          type="datetime-local" 
+                          className="text-sm border p-1 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white w-full md:w-auto"
+                          onChange={(e) => setScheduleDate(e.target.value)}
+                        />
+                        <button 
+                          onClick={() => handleStatusUpdate(app._id, 'Interview', scheduleDate)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold px-3 py-1 rounded transition-colors whitespace-nowrap"
+                        >
+                          Set Interview
+                        </button>
+                      </div>
+                    </div>
+                  </li>
                  ))}
                </ul>
              )}

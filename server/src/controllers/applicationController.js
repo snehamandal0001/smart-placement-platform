@@ -117,11 +117,11 @@ export const getJobApplications = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update application status
+// @desc    Update application status & schedule interview
 // @route   PUT /api/applications/:id/status
 // @access  Private (Recruiter only)
 export const updateApplicationStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
+  const { status, interviewDate } = req.body; 
   const application = await Application.findById(req.params.id);
 
   if (!application) {
@@ -129,8 +129,13 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     throw new Error('Application not found');
   }
 
-  // Update the status and save to MongoDB
+  // Update status
   application.status = status;
+  
+  if (interviewDate && status === 'Interview') {
+    application.interviewDate = interviewDate;
+  }
+
   await application.save();
 
   res.status(200).json({
@@ -200,5 +205,21 @@ export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
   res.status(200).json({ 
     success: true, 
     data: { pipeline: pipelineData, avgCgpa, topSkills } 
+  });
+});
+
+// @desc    Get all applications for the logged-in student
+// @route   GET /api/applications/my-applications
+// @access  Private (Student Only)
+export const getMyApplications = asyncHandler(async (req, res) => {
+  // Find all applications where the applicant ID matches the logged-in user's ID
+  const applications = await Application.find({ applicant: req.user._id })
+    .populate('job', 'title company location') // THIS IS CRUCIAL for the UI Widget!
+    .sort('-createdAt'); // Sort by newest first
+
+  res.status(200).json({
+    success: true,
+    count: applications.length,
+    data: applications
   });
 });

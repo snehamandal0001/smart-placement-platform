@@ -38,6 +38,8 @@ const Home = () => {
     title: '', company: '', location: '', salary: '', description: '', jobType:'', requiredSkills: ''
   });
 
+  const [myApplications, setMyApplications] = useState([]);
+
   // Reset to Page 1 whenever the user types a new search or changes a filter
   useEffect(() => {
     setCurrentPage(1);
@@ -68,6 +70,23 @@ const Home = () => {
     };
     fetchJobs();
   }, [currentPage, searchQuery, typeFilter, locationFilter]); 
+
+  // NEW: Fetch the student's applications when the page loads
+  useEffect(() => {
+    // Only fetch if the user is a student
+    if (user && user.role === 'student') {
+      const fetchMyApplications = async () => {
+        try {
+          // Fetch all applications for the logged-in student
+          const response = await api.get('/applications/my-applications'); 
+          setMyApplications(response.data.data);
+        } catch (error) {
+          console.error('Error fetching student applications:', error);
+        }
+      };
+      fetchMyApplications();
+    }
+  }, [user]);
 
   // Open modal and set the specific job
   const openModal = (job) => {
@@ -159,6 +178,54 @@ const Home = () => {
   return (
     <div className="p-8 max-w-6xl mx-auto relative transition-colors duration-300">
       <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-white">Latest Job Postings</h1>
+      
+      {/* STUDENT UPCOMING INTERVIEWS WIDGET */}
+      {user?.role === 'student' && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 mb-8 transition-colors duration-300">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+            📅 Upcoming Interviews
+          </h2>
+          
+          <div className="space-y-4">
+            {myApplications
+              .filter(app => app.status === 'Interview' && app.interviewDate)
+              .sort((a, b) => new Date(a.interviewDate) - new Date(b.interviewDate))
+              .map(app => {
+                const dateObj = new Date(app.interviewDate);
+                const month = dateObj.toLocaleString('default', { month: 'short' });
+                const day = dateObj.getDate();
+                const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                return (
+                  <div key={app._id} className="flex items-center gap-4 p-4 border border-l-4 border-l-purple-500 rounded-lg bg-gray-50 dark:bg-gray-700/30 hover:shadow-md transition-shadow">
+                    {/* Calendar Date Block */}
+                    <div className="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 w-16 h-16 flex flex-col items-center justify-center shadow-sm shrink-0">
+                      <span className="text-xs font-bold text-red-500 uppercase">{month}</span>
+                      <span className="text-2xl font-black text-gray-800 dark:text-white">{day}</span>
+                    </div>
+                    
+                    {/* Interview Details */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-gray-800 dark:text-white truncate">{app.job?.title || 'Unknown Role'}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 font-medium truncate">{app.job?.company || 'Unknown Company'}</p>
+                    </div>
+                    
+                    {/* Time Block */}
+                    <div className="text-right shrink-0">
+                      <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-bold">
+                        ⏰ {time}
+                      </span>
+                    </div>
+                  </div>
+                );
+            })}
+            
+            {myApplications.filter(app => app.status === 'Interview' && app.interviewDate).length === 0 && (
+              <p className="text-gray-500 italic text-center py-4">No upcoming interviews scheduled.</p>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Search and Filter Bar */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8 flex flex-col md:flex-row gap-4 transition-colors duration-300">

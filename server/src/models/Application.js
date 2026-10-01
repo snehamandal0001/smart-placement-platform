@@ -22,11 +22,15 @@ const applicationSchema = new mongoose.Schema(
       required: true,
       default: ''
     },
-    resumeText: { type: String, default: '' }, //Stores the parsed PDF text
+    resumeText: { type: String, default: '' },
     feedback: {
       type: String,
       default: ''
-    }
+    },
+    interviewDate: {
+    type: Date,
+    default: null
+  }
   },
   {
     timestamps: true
