@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import applicationRoutes from './routes/applicationRoutes.js'; 
+import adminRoutes from './routes/adminRoutes.js';
 import cors from 'cors';
 
 // Load environment variables
@@ -28,6 +29,8 @@ app.use("/api/jobs", jobRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes); 
 app.use('/api/users', userRoutes);
+app.use('/api/admin', adminRoutes);
+
 // Health Check Route
 app.get("/api/health", (req, res) => {
   res.status(200).json({

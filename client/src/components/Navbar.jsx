@@ -33,13 +33,18 @@ const Navbar = () => {
             <>
               {user.role === 'recruiter' && (
                 <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  Dashboard
+                 Recruiter Dashboard
                 </Link>
               )}
               {user.role === 'student' && (
                 <Link to="/profile" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  Profile
+                 Student Profile
                 </Link>
+              )}
+              {user?.role === 'admin' && (
+               <Link to="/tpo-dashboard" className="text-gray-700 hover:text-blue-600 dark:text-gray-300 font-medium">
+                Admin Dashboard
+              </Link>
               )}
               <span className="text-sm font-semibold text-gray-700">Hi, {user.name}</span>
               <button 

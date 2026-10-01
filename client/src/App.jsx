@@ -9,6 +9,7 @@ import NotFound from './pages/NotFound';
 import ViewApplications from './pages/ViewApplications';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
+import TpoDashboard from './pages/TpoDashboard';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
               <Route path="/applications/job/:jobId" element={<ViewApplications />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/register" element={<Register/>} />
+              <Route path="/tpo-dashboard" element={<TpoDashboard />} />
             </Routes>
           </main>
         </BrowserRouter>

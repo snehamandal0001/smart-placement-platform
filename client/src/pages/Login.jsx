@@ -28,7 +28,14 @@ const Login = () => {
         password,
       });
       login(response.data.data);
-      navigate('/');
+
+      if (response.data.data.role === 'admin') {
+      navigate('/tpo-dashboard');
+      } else if (response.data.data.role === 'recruiter') {
+      navigate('/dashboard'); 
+      } else {
+      navigate('/'); 
+      }
 
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong during login');
