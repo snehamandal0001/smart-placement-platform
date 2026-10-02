@@ -122,14 +122,23 @@ export const getJobApplications = asyncHandler(async (req, res) => {
 // @access  Private (Recruiter only)
 export const updateApplicationStatus = asyncHandler(async (req, res) => {
   const { status, interviewDate } = req.body; 
-  const application = await Application.findById(req.params.id);
+  
+  // 1. Find the application AND populate the job details so we can check ownership
+  const application = await Application.findById(req.params.id).populate('job');
 
   if (!application) {
     res.status(404);
     throw new Error('Application not found');
   }
 
-  // Update status
+  // 2. SECURITY FIX: Verify Authorization (The Ownership Check)
+  // Check if the recruiter who posted the job matches the logged-in user
+  if (application.job.postedBy.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to update applications for this job');
+  }
+
+  // 3. Update the status safely
   application.status = status;
   
   if (interviewDate && status === 'Interview') {
