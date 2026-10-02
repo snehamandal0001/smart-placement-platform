@@ -155,3 +155,16 @@ export const deleteJob = asyncHandler(async (req, res) => {
     data: {}
   });
 });
+
+// @desc    Get all jobs posted by the logged-in recruiter
+// @route   GET /api/jobs/my-jobs
+// @access  Private (Recruiter Only)
+export const getMyJobs = asyncHandler(async (req, res) => {
+  const jobs = await Job.find({ postedBy: req.user._id }).sort('-createdAt');
+
+  res.status(200).json({
+    success: true,
+    count: jobs.length,
+    data: jobs
+  });
+});

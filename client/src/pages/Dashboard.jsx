@@ -39,12 +39,13 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const [jobsRes, statsRes] = await Promise.all([
-          api.get('/jobs'),
+          // Call the new backend endpoint that returns ALL of this recruiter's jobs
+          api.get('/jobs/my-jobs'),
           api.get('/applications/analytics/recruiter')
         ]);
         
-        const recruiterJobs = jobsRes.data.data.filter((job) => job.postedBy === user._id);
-        setMyJobs(recruiterJobs);
+        // Remove the frontend filter and directly assign the backend response
+        setMyJobs(jobsRes.data.data);
         setAnalytics(statsRes.data.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -124,7 +125,7 @@ const Dashboard = () => {
         </button>
       </div>
       
-      <h3 className="text-2xl font-bold text-gray-500 dark:text-gray-400 mb-6">Showing Recently Published Jobs</h3>
+      <h3 className="text-2xl font-bold text-gray-500 dark:text-gray-400 mb-6">Showing All Published Jobs</h3>
       
       {/* Visual Analytics Dashboard */}
       {!loading && analytics.pipeline?.length > 0 && (
