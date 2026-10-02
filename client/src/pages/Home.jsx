@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 const Home = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false); // Tracks if the API failed
+  const [retryCount, setRetryCount] = useState(0); // Triggers a re-fetch
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,8 +44,8 @@ const Home = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
+      setError(false); // Reset error state before each attempt
       try {
-        // Dynamically build the URL query string based on what the user typed
         const params = new URLSearchParams({
           page: currentPage,
           ...(searchQuery && { keyword: searchQuery }),
@@ -56,12 +58,13 @@ const Home = () => {
         setTotalPages(response.data.pagination.totalPages);
       } catch (error) {
         console.error('Failed to fetch jobs:', error);
+        setError(true); // Request failed (e.g., network error, server down)
       } finally {
         setLoading(false);
       }
     };
     fetchJobs();
-  }, [currentPage, searchQuery, typeFilter, locationFilter]); 
+  }, [currentPage, searchQuery, typeFilter, locationFilter, retryCount]); // Added retryCount
 
   // Fetch the student's applications when the page loads
   useEffect(() => {
@@ -234,10 +237,21 @@ const Home = () => {
         />
       </div>
 
+     {/* Render Jobs Directly from Backend Array */}
       {loading ? (
         <p className="text-center text-xl text-gray-600 dark:text-gray-400">Loading jobs from database...</p>
+      ) : error ? (
+        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded shadow border border-red-200 dark:border-red-900">
+          <p className="text-red-600 dark:text-red-400 mb-4 font-medium">We couldn't load jobs right now.</p>
+          <button 
+            onClick={() => setRetryCount(prev => prev + 1)}
+            className="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded font-bold transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       ) : jobs.length === 0 ? (
-        <p className="text-center text-gray-500 dark:text-gray-400 py-8 bg-white dark:bg-gray-800 rounded shadow">No jobs match your search criteria.</p>
+        <p className="text-center text-gray-500 dark:text-gray-400 py-8 bg-white dark:bg-gray-800 rounded shadow">No jobs match your filters.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
