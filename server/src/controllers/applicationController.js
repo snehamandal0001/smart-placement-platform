@@ -62,20 +62,21 @@ export const applyForJob = asyncHandler(async (req, res) => {
     data: newApplication
   });
 
-  // 6. Fire-and-Forget Emails (Dynamic Routing)
-  
+  // 6. Fire-and-Forget Emails (Demo Mode Routing)
+  const verifiedEmail = 'snehamandal0415@gmail.com'; // Resend authorized email
+
   // Email the Student (Confirmation)
   sendEmail({
-    email: req.user.email,
-    subject: `Application Received: ${job.title} at ${job.company}`,
+    email: verifiedEmail, // Routed for the demo
+    subject: `[Routed for ${req.user.email}] Application Received: ${job.title}`,
     message: `Hello ${req.user.name},\n\nYour job application and resume for the ${job.title} position have been successfully submitted.`
   }).catch(err => console.error("Student email failed:", err));
 
   // Email the Recruiter (Notification)
   if (job.postedBy && job.postedBy.email) {
     sendEmail({
-      email: job.postedBy.email,
-      subject: `New Applicant: ${job.title}`,
+      email: verifiedEmail, // Routed for the demo
+      subject: `[Routed for ${job.postedBy.email}] New Applicant: ${job.title}`,
       message: `Hello ${job.postedBy.name},\n\nA new student (${req.user.name}) has just applied for your ${job.title} posting. Log in to your dashboard to review their resume.`
     }).catch(err => console.error("Recruiter email failed:", err));
   }
@@ -141,16 +142,18 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
 
   await application.save();
 
-  // 4. Trigger the interview notification email
+  // 4. Trigger the interview notification email (DEMO MODE)
   if (status === 'Interview' && interviewDate) {
+    const verifiedEmail = 'snehamandal0415@gmail.com'; // Hardcoded for Resend Free Tier
+    
     const formattedDate = new Date(interviewDate).toLocaleString('en-IN', {
       weekday: 'short', month: 'short', day: 'numeric', 
       hour: '2-digit', minute: '2-digit'
     });
 
     sendEmail({
-      email: application.applicant.email,
-      subject: `Interview Scheduled: ${application.job.company}`,
+      email: verifiedEmail, // Route to your verified inbox
+      subject: `[Routed for ${application.applicant.email}] Interview Scheduled: ${application.job.company}`,
       message: `Hello ${application.applicant.name},\n\nGreat news! ${application.job.company} has scheduled a technical round for the ${application.job.title} role.\n\nScheduled for: ${formattedDate}\n\nPlease check your student dashboard for details.`
     }).catch(err => console.error("Interview email failed:", err));
   }
