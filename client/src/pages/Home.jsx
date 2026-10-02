@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Home = () => {
   const [jobs, setJobs] = useState([]);
@@ -23,13 +23,6 @@ const Home = () => {
   const [resumeUrl, setResumeUrl] = useState('');
   const [resumeFile, setResumeFile] = useState(null); 
   const [feedbackMessage, setFeedbackMessage] = useState('');
-
-
-
-  const [formData, setFormData] = useState({
-    title: '', company: '', location: '', salary: '', description: '', jobType:'',
-    requiredSkills: '' 
-  });
 
   // State for editing jobs
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -58,7 +51,6 @@ const Home = () => {
           ...(locationFilter && { location: locationFilter }),
         });
 
-        // Fixed the backticks syntax here so the URL builds correctly!
         const response = await api.get(`/jobs?${params.toString()}`);
         setJobs(response.data.data);
         setTotalPages(response.data.pagination.totalPages);
@@ -71,13 +63,11 @@ const Home = () => {
     fetchJobs();
   }, [currentPage, searchQuery, typeFilter, locationFilter]); 
 
-  // NEW: Fetch the student's applications when the page loads
+  // Fetch the student's applications when the page loads
   useEffect(() => {
-    // Only fetch if the user is a student
     if (user && user.role === 'student') {
       const fetchMyApplications = async () => {
         try {
-          // Fetch all applications for the logged-in student
           const response = await api.get('/applications/my-applications'); 
           setMyApplications(response.data.data);
         } catch (error) {
@@ -101,7 +91,6 @@ const Home = () => {
   const handleApply = async (e) => {
     e.preventDefault();
     try {
-      //  Create a FormData object to handle the file upload
       const formData = new FormData();
       formData.append('resumeUrl', resumeUrl);
       
@@ -109,12 +98,10 @@ const Home = () => {
         formData.append('resumeFile', resumeFile);
       }
 
-      //  Send it with the special multipart/form-data header
-      const response = await api.post(`/applications/${selectedJob._id}/apply`, formData
-      );
-      setFeedbackMessage(response.data.message); // Success messages
+      const response = await api.post(`/applications/${selectedJob._id}/apply`, formData);
+      setFeedbackMessage(response.data.message);
     } catch (err) {
-      setFeedbackMessage(err.response?.data?.message || 'Failed to apply.'); // Error message
+      setFeedbackMessage(err.response?.data?.message || 'Failed to apply.');
     }
   };
 
@@ -122,7 +109,6 @@ const Home = () => {
     if (window.confirm("Are you sure you want to delete this job? This will also delete all student applications for it.")) {
       try {
         await api.delete(`/jobs/${jobId}`);
-        // Remove the deleted job from the local state instantly
         setJobs(jobs.filter((job) => job._id !== jobId));
       } catch (error) {
         console.error("Failed to delete job:", error);
@@ -150,18 +136,14 @@ const Home = () => {
   const handleUpdateJob = async (e) => {
     e.preventDefault();
     try {
-      // Convert the comma-separated string into an array
       const formattedSkills = editFormData.requiredSkills 
         ? editFormData.requiredSkills.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
         : [];
 
-      // Attach the formatted array to the payload
       const payload = { ...editFormData, requiredSkills: formattedSkills };
 
-      // Send the payload instead of editFormData
       const response = await api.put(`/jobs/${editingJob._id}`, payload);
       
-      // Instantly update the job in the React UI
       setJobs(jobs.map((job) => (job._id === editingJob._id ? response.data.data : job)));
       
       setIsEditModalOpen(false);
@@ -172,8 +154,6 @@ const Home = () => {
       alert(error.response?.data?.message || "Failed to update job");
     }
   };
-
-  
 
   return (
     <div className="p-8 max-w-6xl mx-auto relative transition-colors duration-300">
@@ -198,19 +178,16 @@ const Home = () => {
 
                 return (
                   <div key={app._id} className="flex items-center gap-4 p-4 border border-l-4 border-l-purple-500 rounded-lg bg-gray-50 dark:bg-gray-700/30 hover:shadow-md transition-shadow">
-                    {/* Calendar Date Block */}
                     <div className="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 w-16 h-16 flex flex-col items-center justify-center shadow-sm shrink-0">
                       <span className="text-xs font-bold text-red-500 uppercase">{month}</span>
                       <span className="text-2xl font-black text-gray-800 dark:text-white">{day}</span>
                     </div>
                     
-                    {/* Interview Details */}
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-bold text-gray-800 dark:text-white truncate">{app.job?.title || 'Unknown Role'}</h3>
                       <p className="text-gray-600 dark:text-gray-300 font-medium truncate">{app.job?.company || 'Unknown Company'}</p>
                     </div>
                     
-                    {/* Time Block */}
                     <div className="text-right shrink-0">
                       <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-bold">
                         ⏰ {time}
@@ -256,8 +233,6 @@ const Home = () => {
           onChange={(e) => setLocationFilter(e.target.value)}
         />
       </div>
-
- {/* Render Jobs Directly from Backend Array */}
 
       {loading ? (
         <p className="text-center text-xl text-gray-600 dark:text-gray-400">Loading jobs from database...</p>
@@ -312,9 +287,7 @@ const Home = () => {
         </div>
         )}
 
-      
-
-      {/* NEW: Pagination Buttons */}
+      {/* Pagination Buttons */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center space-x-4 mt-8 mb-8">
           <button
@@ -346,7 +319,6 @@ const Home = () => {
           </button>
         </div>
       )}
-     
 
       {/* Application Modal */}
       {isModalOpen && (
@@ -369,7 +341,6 @@ const Home = () => {
                   />
                 </div>
 
-                {/* NEW: File Upload Input */}
                 <div>
                   <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Upload PDF Resume (For AI Parsing)</label>
                   <input
@@ -444,14 +415,12 @@ const Home = () => {
               </div>
               <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Job Type</label>
                 <select 
-                // className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500"
                 className = "w-full px-4 py-2 border dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-transparent dark:text-white"
                 value={editFormData.jobType} onChange={(e) => setEditFormData({...editFormData, jobType: e.target.value})}
               >
                 <option value="Full-Time" className="dark:bg-gray-800">Full-Time</option>
                 <option value="Part-Time" className="dark:bg-gray-800">Part-Time</option>
                 <option value="Internship" className="dark:bg-gray-800">Internship</option>
-              
               </select>
 
               <div>
@@ -480,7 +449,6 @@ const Home = () => {
                 />
               </div>
 
-              <div className="flex gap-4 mt-6"></div>
               <div className="flex gap-4 mt-6">
                 <button 
                   type="submit" 
@@ -503,8 +471,6 @@ const Home = () => {
 
     </div>
   );
-
-
 };
 
 export default Home;
