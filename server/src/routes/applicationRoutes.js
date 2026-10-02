@@ -8,6 +8,7 @@ import {
   getMyApplications 
 } from '../controllers/applicationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { validateApplication, validateRequest } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ const upload = multer({
 });
 
 // ==========================================
-// 1. STATIC ROUTES (Must go first)
+// 1. STATIC ROUTES 
 // ==========================================
 
 // Recruiter Route: View analytics
@@ -39,11 +40,16 @@ router.get('/my-applications', protect, authorize('student'), getMyApplications)
 
 
 // ==========================================
-// 2. DYNAMIC ID ROUTES (Must go last)
+// 2. DYNAMIC ID ROUTES 
 // ==========================================
 
 // Student Route: Apply for a job (Requires PDF upload)
-router.post('/:jobId/apply', protect, authorize('student'), upload.single('resumeFile'), applyForJob);
+router.post('/:jobId/apply',
+   protect, authorize('student'),
+   upload.single('resumeFile'),
+   validateApplication, 
+   validateRequest, 
+   applyForJob);
 
 // Recruiter Route: View applications for a specific job
 router.get('/job/:jobId', protect, authorize('recruiter'), getJobApplications);
