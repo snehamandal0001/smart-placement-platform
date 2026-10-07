@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
+import ProfileSkeleton from '../components/ProfileSkeleton';
 
 const Profile = () => {
   const { user } = useContext(AuthContext);
@@ -63,7 +64,7 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-lg">Loading profile...</p>;
+  if (loading) return <ProfileSkeleton />;
 
   return (
     <div className="max-w-3xl mx-auto p-8 mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors">

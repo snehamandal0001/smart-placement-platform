@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
+import TpoDashboardSkeleton from '../components/TpoDashboardSkeleton';
 
 const TpoDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -37,7 +38,7 @@ const TpoDashboard = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading TPO Workspace...</p>;
+  if (loading) return <TpoDashboardSkeleton />;
 
   return (
     <div className="max-w-6xl mx-auto p-8 mt-4">
