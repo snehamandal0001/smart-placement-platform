@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../utils/api';
+import ApplicationSkeleton from '../components/ApplicationSkeleton';
 
 const ViewApplications = () => {
   const { jobId } = useParams();
@@ -127,7 +128,11 @@ const ViewApplications = () => {
       )}
 
       {loading ? (
-        <p className="text-center text-xl text-gray-600">Loading applicants...</p>
+        <div className="space-y-4">
+          {[...Array(5)].map((_, index) => (
+            <ApplicationSkeleton key={index} />
+          ))}
+        </div>
       ) : applications.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
           <p className="text-gray-500 text-lg">No students have applied for this position yet.</p>

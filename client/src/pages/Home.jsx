@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import JobSkeleton from '../components/JobSkeleton';
 
 const Home = () => {
   const [jobs, setJobs] = useState([]);
@@ -239,8 +240,12 @@ const Home = () => {
 
      {/* Render Jobs Directly from Backend Array */}
       {loading ? (
-        <p className="text-center text-xl text-gray-600 dark:text-gray-400">Loading jobs from database...</p>
-      ) : error ? (
+        // NEW: Skeleton Loader Grid
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, index) => (
+            <JobSkeleton key={index} />
+          ))}
+        </div>      ) : error ? (
         <div className="text-center py-8 bg-white dark:bg-gray-800 rounded shadow border border-red-200 dark:border-red-900">
           <p className="text-red-600 dark:text-red-400 mb-4 font-medium">We couldn't load jobs right now.</p>
           <button 

@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Ba
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
+import DashboardSkeleton from '../components/DashboardSkeleton';
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -177,7 +178,7 @@ const Dashboard = () => {
       )}
 
       {loading ? (
-        <p className="text-gray-600 text-lg">Loading your workspace...</p>
+        <DashboardSkeleton />
       ) : myJobs.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 p-8 rounded shadow text-center border border-gray-100 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400">You haven't posted any jobs yet.</p>
