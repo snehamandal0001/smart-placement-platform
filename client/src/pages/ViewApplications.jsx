@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../utils/api';
 import ApplicationSkeleton from '../components/ApplicationSkeleton';
 
@@ -95,7 +96,7 @@ const ViewApplications = () => {
       ));
     } catch (error) {
       console.error("Failed to update status:", error);
-      alert("Could not update status.");
+      toast.error("Could not update status.");
     }
   };
 

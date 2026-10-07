@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
@@ -33,8 +34,9 @@ const TpoDashboard = () => {
     try {
       await api.put(`/admin/recruiters/${recruiterId}/status`, { accountStatus: newStatus });
       fetchDashboardData(); 
+      toast.success(`Recruiter marked as ${newStatus}`);
     } catch (error) {
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     }
   };
 

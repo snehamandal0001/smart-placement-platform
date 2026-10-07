@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
@@ -101,16 +102,14 @@ const Dashboard = () => {
         status,
         interviewDate: date || null
       });
-      
       // Instantly update the local state so the UI reflects the change without reloading
       setApplications(applications.map(app => 
         app._id === applicationId ? { ...app, status, interviewDate: date } : app
       ));
-      
-      alert('Interview scheduled successfully!');
+      toast.success('Interview scheduled successfully!');
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to schedule interview.');
+      toast.error('Failed to schedule interview.');
     }
   };
 

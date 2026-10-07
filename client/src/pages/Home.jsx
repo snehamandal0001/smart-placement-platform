@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { toast } from 'react-hot-toast';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -116,7 +117,7 @@ const Home = () => {
         setJobs(jobs.filter((job) => job._id !== jobId));
       } catch (error) {
         console.error("Failed to delete job:", error);
-        alert(error.response?.data?.message || "Failed to delete job");
+        toast.error(error.response?.data?.message || "Failed to delete job");
       }
     }
   };
@@ -152,10 +153,10 @@ const Home = () => {
       
       setIsEditModalOpen(false);
       setEditingJob(null);
-      alert("Job updated successfully!");
+      toast.success("Job updated successfully!");
     } catch (error) {
       console.error("Failed to update job:", error);
-      alert(error.response?.data?.message || "Failed to update job");
+      toast.error(error.response?.data?.message || "Failed to update job");
     }
   };
 

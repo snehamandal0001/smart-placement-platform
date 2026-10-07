@@ -1,5 +1,6 @@
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../utils/api'; 
 import { AuthContext } from '../context/AuthContext'; 
 
@@ -24,7 +25,7 @@ const Register = () => {
         login(response.data.data); 
         navigate('/');
       } else {
-        alert('Registration successful! Please wait for TPO approval to log in.');
+        toast.success('Registration successful! Please wait for TPO approval to log in.');
         navigate('/login');
       }
     } catch (err) {

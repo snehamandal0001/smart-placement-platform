@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
@@ -18,6 +19,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Navbar />
+          <Toaster position="bottom-right" toastOptions={{ duration: 3000 }} />
           <main className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
             <Routes>
               <Route path="/" element={<Home />} />
