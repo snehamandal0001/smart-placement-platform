@@ -161,8 +161,56 @@ const Home = () => {
 
   return (
     <div className="p-8 max-w-6xl mx-auto relative transition-colors duration-300">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-white">Latest Job Postings</h1>
-      
+      {/* --- HERO / LANDING SECTION --- */}
+      <div className="text-center py-16 px-4 mb-16 bg-gradient-to-b from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-3xl shadow-sm border border-blue-100 dark:border-gray-700 transition-colors duration-300">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 tracking-tight">
+          PlacementHub
+        </h1>
+        <p className="text-2xl md:text-3xl text-gray-800 dark:text-gray-200 font-bold mb-4">
+          Smarter campus recruitment, from application to offer.
+        </p>
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto font-medium">
+          One platform for students, recruiters and placement officers.
+        </p>
+        
+        {/* Call to Action Buttons */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
+          <a 
+            href="#jobs-section" 
+            className="px-8 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+          >
+            Explore Jobs
+          </a>
+          <Link 
+            to={user ? "/dashboard" : "/register"} 
+            className="px-8 py-3 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-bold rounded-lg border-2 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+          >
+            Get Started
+          </Link>
+        </div>
+
+        {/* Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto text-left">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div className="text-4xl mb-4">🎓</div>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Students</h3>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">Discover jobs and track applications.</p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div className="text-4xl mb-4">🏢</div>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Recruiters</h3>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">Find and shortlist qualified candidates.</p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div className="text-4xl mb-4">📊</div>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">TPO</h3>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">Manage placement drives and monitor outcomes.</p>
+          </div>
+        </div>
+      </div>
+
       {/* STUDENT UPCOMING INTERVIEWS WIDGET */}
       {user?.role === 'student' && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 mb-8 transition-colors duration-300">
@@ -207,6 +255,15 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      {/* Anchor for the Explore Jobs button */}
+      <div id="jobs-section" className="pt-8">
+        <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-white">
+          Featured Jobs
+        </h2>
+      </div>
+
+      {/* Search and Filter Bar */}
       
       {/* Search and Filter Bar */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8 flex flex-col md:flex-row gap-4 transition-colors duration-300">
