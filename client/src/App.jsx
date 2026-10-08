@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import Register from './pages/Register';
 import TpoDashboard from './pages/TpoDashboard';
 import MyApplications from './pages/MyApplications';
+import JobDetails from './pages/JobDetails';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
               <Route path="/register" element={<Register/>} />
               <Route path="/tpo-dashboard" element={<TpoDashboard />} />
               <Route path="/my-applications" element={<MyApplications />} />
+              <Route path="/jobs/:id" element={<JobDetails />} />
             </Routes>
           </main>
         </BrowserRouter>

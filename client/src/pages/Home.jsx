@@ -8,8 +8,8 @@ import JobSkeleton from '../components/JobSkeleton';
 const Home = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false); // Tracks if the API failed
-  const [retryCount, setRetryCount] = useState(0); // Triggers a re-fetch
+  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,15 +20,9 @@ const Home = () => {
   const [typeFilter, setTypeFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   
-  // Modal State
   const { user } = useContext(AuthContext);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [resumeUrl, setResumeUrl] = useState('');
-  const [resumeFile, setResumeFile] = useState(null); 
-  const [feedbackMessage, setFeedbackMessage] = useState('');
 
-  // State for editing jobs
+  // State for editing jobs (Recruiter specific)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [editFormData, setEditFormData] = useState({
@@ -46,7 +40,7 @@ const Home = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
-      setError(false); // Reset error state before each attempt
+      setError(false);
       try {
         const params = new URLSearchParams({
           page: currentPage,
@@ -60,13 +54,13 @@ const Home = () => {
         setTotalPages(response.data.pagination.totalPages);
       } catch (error) {
         console.error('Failed to fetch jobs:', error);
-        setError(true); // Request failed (e.g., network error, server down)
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
     fetchJobs();
-  }, [currentPage, searchQuery, typeFilter, locationFilter, retryCount]); // Added retryCount
+  }, [currentPage, searchQuery, typeFilter, locationFilter, retryCount]);
 
   // Fetch the student's applications when the page loads
   useEffect(() => {
@@ -83,38 +77,12 @@ const Home = () => {
     }
   }, [user]);
 
-  // Open modal and set the specific job
-  const openModal = (job) => {
-    setSelectedJob(job);
-    setIsModalOpen(true);
-    setFeedbackMessage('');
-    setResumeUrl('');
-    setResumeFile(null);
-  };
-
-  // Submit the application to the backend
-  const handleApply = async (e) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append('resumeUrl', resumeUrl);
-      
-      if (resumeFile) {
-        formData.append('resumeFile', resumeFile);
-      }
-
-      const response = await api.post(`/applications/${selectedJob._id}/apply`, formData);
-      setFeedbackMessage(response.data.message);
-    } catch (err) {
-      setFeedbackMessage(err.response?.data?.message || 'Failed to apply.');
-    }
-  };
-
   const handleDeleteJob = async (jobId) => {
     if (window.confirm("Are you sure you want to delete this job? This will also delete all student applications for it.")) {
       try {
         await api.delete(`/jobs/${jobId}`);
         setJobs(jobs.filter((job) => job._id !== jobId));
+        toast.success("Job deleted successfully");
       } catch (error) {
         console.error("Failed to delete job:", error);
         toast.error(error.response?.data?.message || "Failed to delete job");
@@ -263,8 +231,6 @@ const Home = () => {
           Featured Jobs
         </h2>
       </div>
-
-      {/* Search and Filter Bar */}
       
       {/* Search and Filter Bar */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8 flex flex-col md:flex-row gap-4 transition-colors duration-300">
@@ -302,7 +268,8 @@ const Home = () => {
           {[...Array(6)].map((_, index) => (
             <JobSkeleton key={index} />
           ))}
-        </div>      ) : error ? (
+        </div>      
+      ) : error ? (
         <div className="text-center py-8 bg-white dark:bg-gray-800 rounded shadow border border-red-200 dark:border-red-900">
           <p className="text-red-600 dark:text-red-400 mb-4 font-medium">We couldn't load jobs right now.</p>
           <button 
@@ -328,12 +295,12 @@ const Home = () => {
               </div>
               
               {user?.role === 'student' ? (
-                <button 
-                  onClick={() => openModal(job)}
-                  className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition-colors"
+                <Link 
+                  to={`/jobs/${job._id}`}
+                  className="block text-center w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition-colors"
                 >
-                  Apply Now
-                </button>
+                  View Details
+                </Link>
               ) : user?.role === 'recruiter' && user?._id === job.postedBy ? (
                 <div className="flex gap-2">
                   <Link 
@@ -396,54 +363,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* Application Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md shadow-xl transition-colors duration-300">
-            <h2 className="text-xl font-bold mb-4 dark:text-white">Apply for {selectedJob?.title}</h2>
-            {feedbackMessage ? (
-              <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 dark:text-white rounded text-center font-medium">{feedbackMessage}</div>
-            ) : (
-              <form onSubmit={handleApply} className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Resume Link (Google Drive)</label>
-                  <input
-                    type="url"
-                    required
-                    className="w-full px-4 py-2 border dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-transparent dark:text-white"
-                    placeholder="https://drive.google.com/..."
-                    value={resumeUrl}
-                    onChange={(e) => setResumeUrl(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Upload PDF Resume (For AI Parsing)</label>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    className="w-full px-4 py-2 border dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-transparent dark:text-white"
-                    onChange={(e) => setResumeFile(e.target.files[0])}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Only .pdf files are supported.</p>
-                </div>
-
-                <button type="submit" className="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">
-                  Submit Application
-                </button>
-              </form>
-            )}
-            <button 
-              onClick={() => setIsModalOpen(false)} 
-              className="mt-4 w-full bg-gray-200 dark:bg-gray-700 dark:text-white py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    
-    {/* EDIT JOB MODAL */}
+      {/* EDIT JOB MODAL */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-xl">
