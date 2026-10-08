@@ -1,4 +1,4 @@
-import { validationResult, check } from 'express-validator';
+import { validationResult, check, param } from 'express-validator';
 
 // 1. Core Error Checker
 // This runs after the rules and throws a 400 error if any rule fails
@@ -35,6 +35,6 @@ export const validateUser = [
 
 // 4. Application Rules
 export const validateApplication = [
-  check('jobId').isMongoId().withMessage('Invalid Job ID format'),
+  param('jobId').isMongoId().withMessage('Invalid Job ID format'),
   check('resumeUrl').optional().isURL().withMessage('Resume must be a valid URL')
 ];
