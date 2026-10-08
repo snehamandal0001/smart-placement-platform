@@ -13,6 +13,8 @@ const Dashboard = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [analytics, setAnalytics] = useState({ pipeline: [], avgCgpa: 0, topSkills: [] });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false); 
+  const [retryCount, setRetryCount] = useState(0);
   const [scheduleDate, setScheduleDate] = useState('');
 
   // Applicants Modal State
@@ -39,24 +41,25 @@ const Dashboard = () => {
       return;
     }
     const fetchData = async () => {
+      setLoading(true);
+      setError(false); 
       try {
         const [jobsRes, statsRes] = await Promise.all([
-          // Call the new backend endpoint that returns ALL of this recruiter's jobs
           api.get('/jobs/my-jobs'),
           api.get('/applications/analytics/recruiter')
         ]);
         
-        // Remove the frontend filter and directly assign the backend response
         setMyJobs(jobsRes.data.data);
         setAnalytics(statsRes.data.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setError(true); 
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [user, navigate]);
+  }, [user, navigate, retryCount]); 
 
   const handleViewApplicants = async (job) => {
     setSelectedJobTitle(job.title);
@@ -178,6 +181,16 @@ const Dashboard = () => {
 
       {loading ? (
         <DashboardSkeleton />
+      ) : error ? (
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow border border-red-200 dark:border-red-900 mt-8">
+          <p className="text-red-600 dark:text-red-400 mb-4 font-medium text-lg">We couldn't load your dashboard data right now.</p>
+          <button 
+            onClick={() => setRetryCount(prev => prev + 1)}
+            className="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded font-bold transition-colors shadow-sm"
+          >
+            Try Again
+          </button>
+        </div>
       ) : myJobs.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 p-8 rounded shadow text-center border border-gray-100 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400">You haven't posted any jobs yet.</p>
