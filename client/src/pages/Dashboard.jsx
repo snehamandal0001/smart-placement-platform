@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell } from 'recharts';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -79,7 +79,7 @@ const Dashboard = () => {
 
   const handlePostJob = async (e) => {
     e.preventDefault();
-    setIsPosting(true); // Start loading
+    setIsPosting(true); 
     try {
       const formattedSkills = newJob.requiredSkills 
         ? newJob.requiredSkills.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
@@ -97,7 +97,7 @@ const Dashboard = () => {
       console.error('Error posting job:', error);
       toast.error('Failed to post job.');
     } finally {
-      setIsPosting(false); // Stop loading
+      setIsPosting(false); 
     }
   };
 
@@ -107,7 +107,6 @@ const Dashboard = () => {
         status,
         interviewDate: date || null
       });
-      // Instantly update the local state so the UI reflects the change without reloading
       setApplications(applications.map(app => 
         app._id === applicationId ? { ...app, status, interviewDate: date } : app
       ));
@@ -117,6 +116,10 @@ const Dashboard = () => {
       toast.error('Failed to schedule interview.');
     }
   };
+
+  // Helper functions to extract metrics from the pipeline array
+  const getCount = (statusName) => analytics.pipeline?.find(item => item.name === statusName)?.value || 0;
+  const totalApplicants = analytics.pipeline?.reduce((sum, item) => sum + item.value, 0) || 0;
 
   return (
     <div className="p-8 max-w-6xl mx-auto relative">
@@ -134,49 +137,81 @@ const Dashboard = () => {
       
       {/* Visual Analytics Dashboard */}
       {!loading && analytics.pipeline?.length > 0 && (
-        <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div className="mb-8">
           
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200">Applicant Pool Analytics</h3>
-            <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
-              <span className="text-sm font-bold uppercase tracking-wide">Avg Applicant CGPA:</span>
-              <span className="text-xl font-black ml-2">{analytics.avgCgpa}</span>
+          {/* Top Metric Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+              <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Applicants</h3>
+              <p className="text-3xl font-black text-blue-600 dark:text-blue-400">{totalApplicants}</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+              <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Shortlist / OA</h3>
+              <p className="text-3xl font-black text-yellow-500 dark:text-yellow-400">{getCount('OA')}</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+              <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Interviews</h3>
+              <p className="text-3xl font-black text-purple-600 dark:text-purple-400">{getCount('Interview')}</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+              <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Offers</h3>
+              <p className="text-3xl font-black text-green-600 dark:text-green-400">{getCount('Offered')}</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-72">
-            {/* Pie Chart: Status Pipeline */}
-            <div className="w-full h-full">
-              <h4 className="text-sm font-semibold text-gray-500 mb-2 text-center">Pipeline Distribution</h4>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Application Pipeline Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">Application Pipeline</h3>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
                     data={analytics.pipeline}
-                    cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value"
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                   >
-                    {analytics.pipeline.map((entry, index) => {
-                      const colors = { 'Applied': '#3b82f6', 'OA': '#eab308', 'Interview': '#a855f7', 'Offered': '#22c55e', 'Rejected': '#ef4444' };
-                      return <Cell key={`cell-${index}`} fill={colors[entry.name] || '#8884d8'} />;
-                    })}
-                  </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                  <Legend verticalAlign="bottom" height={36} />
-                </PieChart>
-              </ResponsiveContainer>
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} tick={{ fill: '#6B7280', fontWeight: 'bold' }} />
+                    <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                      {
+                        analytics.pipeline.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={
+                            entry.name === 'Offered' ? '#10B981' : 
+                            entry.name === 'Interview' ? '#8B5CF6' : 
+                            entry.name === 'OA' ? '#F59E0B' :
+                            entry.name === 'Rejected' ? '#EF4444' :
+                            '#3B82F6'
+                          } />
+                        ))
+                      }
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Bar Chart: Most Common Skills */}
-            <div className="w-full h-full">
-              <h4 className="text-sm font-semibold text-gray-500 mb-2 text-center">Top Skills in Resume Pool</h4>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analytics.topSkills} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                  <XAxis dataKey="name" tick={{fontSize: 10}} interval={0} stroke="#9ca3af" />                  <YAxis allowDecimals={false} tick={{fontSize: 12}} stroke="#9ca3af" />
-                  <Tooltip cursor={{fill: 'rgba(59, 130, 246, 0.1)'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                  <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            {/* Top Skills Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">Top Skills in Resume Pool</h3>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={analytics.topSkills}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <XAxis type="number" hide />
+                    {/* Maps to the 'name' field currently in your state for skills */}
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={80} tick={{ fill: '#6B7280', fontWeight: 'bold', fontSize: 12 }} />
+                    <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Bar dataKey="count" fill="#4B5563" radius={[0, 4, 4, 0]} barSize={24} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
+
           </div>
         </div>
       )}
@@ -219,14 +254,12 @@ const Dashboard = () => {
                   <td className="p-4 text-gray-600 dark:text-gray-300">{job.salary}</td>
                   <td className="p-4 text-gray-600 dark:text-gray-300">{job.jobType}</td>
                   <td className="p-4 flex gap-2">
-                    {/* Opens Quick Modal */}
                     <button 
                       onClick={() => handleViewApplicants(job)}
                       className="text-sm bg-green-50 text-green-700 px-3 py-1 rounded border border-green-200 hover:bg-green-600 hover:text-white transition-colors"
                     >
                       Quick View
                     </button>
-                    {/* Routes to your dedicated ViewApplications page for the AI extraction view! */}
                     <Link 
                       to={`/applications/job/${job._id}`}
                       className="text-sm bg-purple-50 text-purple-700 px-3 py-1 rounded border border-purple-200 hover:bg-purple-600 hover:text-white transition-colors"
