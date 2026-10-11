@@ -16,6 +16,7 @@ const JobDetails = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [resumeUrl, setResumeUrl] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
+  const [isApplying, setIsApplying] = useState(false); 
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -35,6 +36,7 @@ const JobDetails = () => {
 
   const handleApply = async (e) => {
     e.preventDefault();
+    setIsApplying(true); // Start loading
     try {
       const formData = new FormData();
       formData.append('resumeUrl', resumeUrl);
@@ -45,6 +47,8 @@ const JobDetails = () => {
       setIsModalOpen(false);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to apply.');
+    } finally {
+      setIsApplying(false); // Stop loading
     }
   };
 
@@ -143,7 +147,15 @@ const JobDetails = () => {
                 <input type="file" accept=".pdf" className="w-full px-4 py-2 border dark:border-gray-600 rounded bg-transparent dark:text-white" onChange={(e) => setResumeFile(e.target.files[0])} />
                 <p className="text-xs text-gray-500 mt-1">Only .pdf files are supported.</p>
               </div>
-              <button type="submit" className="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">Submit Application</button>
+              <button 
+                type="submit" 
+                disabled={isApplying}
+                className={`w-full text-white py-2 rounded font-bold transition-colors ${
+                  isApplying ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                }`}
+              >
+                {isApplying ? 'Applying...' : 'Submit Application'}
+              </button>
             </form>
             <button onClick={() => setIsModalOpen(false)} className="mt-4 w-full bg-gray-200 dark:bg-gray-700 dark:text-white py-2 rounded hover:bg-gray-600 font-medium transition-colors">Close</button>
           </div>

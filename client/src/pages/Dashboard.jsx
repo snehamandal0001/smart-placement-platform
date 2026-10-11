@@ -25,6 +25,7 @@ const Dashboard = () => {
 
   // Post Job Modal State
   const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
+  const [isPosting, setIsPosting] = useState(false); 
   const [newJob, setNewJob] = useState({
     title: '',
     company: '',
@@ -78,24 +79,25 @@ const Dashboard = () => {
 
   const handlePostJob = async (e) => {
     e.preventDefault();
+    setIsPosting(true); // Start loading
     try {
-      // 1. Convert comma-separated string into an array
       const formattedSkills = newJob.requiredSkills 
         ? newJob.requiredSkills.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
         : [];
 
-      // 2. Send dynamic data instead of hardcoded values
-      const response = await api.post('/jobs', {
-        ...newJob,
-        requiredSkills: formattedSkills
+      const response = await api.post('/jobs', { 
+        ...newJob, 
+        requiredSkills: formattedSkills 
       });
-
-      setMyJobs([response.data.data, ...myJobs]); // Add new job to the top of the list
-      
+      setMyJobs([response.data.data, ...myJobs]); 
       setIsPostJobModalOpen(false);
       setNewJob({ title: '', company: '', location: '', salary: '', jobType: 'Full-Time', requiredSkills: '', description: '' });
+      toast.success('Job posted successfully!');
     } catch (error) {
       console.error('Error posting job:', error);
+      toast.error('Failed to post job.');
+    } finally {
+      setIsPosting(false); // Stop loading
     }
   };
 
@@ -290,8 +292,14 @@ const Dashboard = () => {
               />
 
               <div className="flex gap-4 mt-2">
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition-colors">
-                  Post Job
+                <button 
+                  type="submit" 
+                  disabled={isPosting}
+                  className={`flex-1 text-white py-2 rounded font-bold transition-colors ${
+                    isPosting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  {isPosting ? 'Posting...' : 'Post Job'}
                 </button>
                 <button type="button" onClick={() => setIsPostJobModalOpen(false)} className="flex-1 bg-gray-500 text-white py-2 rounded font-bold hover:bg-gray-600 transition-colors">
                   Cancel

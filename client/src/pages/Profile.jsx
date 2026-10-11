@@ -15,6 +15,7 @@ const Profile = () => {
   
   // UI State
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
 
   // 1. Fetch current profile data when page loads
@@ -44,23 +45,23 @@ const Profile = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setMessage('');
+    setIsSaving(true); 
     
     try {
-      // Convert comma-separated string back into an array for the backend
       const skillsArray = skills.split(',').map(skill => skill.trim()).filter(skill => skill !== '');
-
-      const response = await api.put('/users/profile', {
-        name,
-        email,
-        resumeUrl,
-        skills: skillsArray,
-        cgpa: Number(cgpa)
+      await api.put('/users/profile', { 
+        name, 
+        email, 
+        resumeUrl, 
+        skills: skillsArray, 
+        cgpa: Number(cgpa) 
       });
-
       setMessage('✅ Profile updated successfully!');
     } catch (error) {
       setMessage('❌ Failed to update profile.');
       console.error(error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -139,8 +140,14 @@ const Profile = () => {
           />
         </div>
 
-        <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition-colors">
-          Save Profile
+        <button 
+          type="submit" 
+          disabled={isSaving}
+          className={`w-full text-white font-bold py-3 rounded transition-colors ${
+            isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {isSaving ? 'Saving...' : 'Save Profile'}
         </button>
       </form>
     </div>
