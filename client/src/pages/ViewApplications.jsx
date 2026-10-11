@@ -7,6 +7,7 @@ import ApplicationSkeleton from '../components/ApplicationSkeleton';
 const ViewApplications = () => {
   const { jobId } = useParams();
   const [applications, setApplications] = useState([]);
+  const [sortBy, setSortBy] = useState('matchScore'); // 'matchScore', 'cgpa', 'date'
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,8 +27,6 @@ const ViewApplications = () => {
           const score = calculateMatchScore(app.resumeText, fetchedJob.requiredSkills);
           return { ...app, matchScore: score };
         });
-
-        scoredApplications.sort((a, b) => b.matchScore - a.matchScore);
 
         setApplications(scoredApplications);
         setJob(fetchedJob);
@@ -65,7 +64,7 @@ const ViewApplications = () => {
     );
   };
 
-// Calculate Match Percentage
+  // Calculate Match Percentage
   const calculateMatchScore = (resumeText, requiredSkills) => {
     if (!resumeText || !requiredSkills || requiredSkills.length === 0) return 0;
 
@@ -94,11 +93,26 @@ const ViewApplications = () => {
       setApplications(applications.map(app => 
         app._id === appId ? { ...app, status: newStatus } : app
       ));
+      toast.success("Candidate status updated!");
     } catch (error) {
       console.error("Failed to update status:", error);
       toast.error("Could not update status.");
     }
   };
+
+  // Derive the sorted array dynamically based on the toggle
+  const sortedApplications = [...applications].sort((a, b) => {
+    if (sortBy === 'matchScore') {
+      return (b.matchScore || 0) - (a.matchScore || 0);
+    }
+    if (sortBy === 'cgpa') {
+      return (b.applicant?.cgpa || 0) - (a.applicant?.cgpa || 0);
+    }
+    if (sortBy === 'date') {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    }
+    return 0;
+  });
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -128,6 +142,30 @@ const ViewApplications = () => {
         </div>
       )}
 
+      {/* Sorting Controls */}
+      {!loading && applications.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 sm:mb-0">
+            Candidate Leaderboard
+          </h2>
+          
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <label className="text-sm font-bold text-gray-600 dark:text-gray-300 whitespace-nowrap">
+              Rank By:
+            </label>
+            <select 
+              className="w-full sm:w-auto px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white font-medium shadow-sm"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="matchScore">AI Match Score (Highest First)</option>
+              <option value="cgpa">CGPA (Highest First)</option>
+              <option value="date">Application Date (Newest First)</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-4">
           {[...Array(5)].map((_, index) => (
@@ -139,88 +177,87 @@ const ViewApplications = () => {
           <p className="text-gray-500 text-lg">No students have applied for this position yet.</p>
         </div>
       ) : ( 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 uppercase text-sm">
-                <th className="p-4 border-b dark:border-gray-600">Applicant Name</th>
-                <th className="p-4 border-b dark:border-gray-600">Email</th>
-                <th className="p-4 border-b dark:border-gray-600">CGPA</th>
-                <th className="p-4 border-b dark:border-gray-600">Resume Data</th>
-                <th className="p-4 border-b dark:border-gray-600">ATS Score</th>
-                <th className="p-4 border-b dark:border-gray-600">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app) => (
-                <tr key={app._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <td className="p-4 border-b dark:border-gray-600 font-medium text-gray-800 dark:text-white align-top">
-                    {app.applicant.name}
-                  </td>
-                  <td className="p-4 border-b dark:border-gray-600 text-gray-600 dark:text-gray-300 align-top">
-                    {app.applicant.email}
-                  </td>
-                  <td className="p-4 border-b dark:border-gray-600 text-gray-600 dark:text-gray-300 align-top">
-                    {app.applicant.cgpa || 'N/A'}
-                  </td>
-                  <td className="p-4 border-b dark:border-gray-600 align-top w-1/2">
-                    <a 
-                      href={app.resumeUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-block mb-4 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 font-medium text-sm"
-                    >
-                      View Resume URL 
-                    </a>
+        <div className="space-y-4">
+          {sortedApplications.map((app, index) => {
+            // Determine the rank medal
+            const getRankBadge = (idx) => {
+              if (idx === 0) return <span className="text-3xl" title="Rank 1">🥇</span>;
+              if (idx === 1) return <span className="text-3xl" title="Rank 2">🥈</span>;
+              if (idx === 2) return <span className="text-3xl" title="Rank 3">🥉</span>;
+              return <span className="text-xl font-bold text-gray-400 w-8 text-center inline-block">#{idx + 1}</span>;
+            };
 
-                    {app.resumeText ? (
-                      <div className="mt-2">
-                        <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                          Extracted Resume Text
-                        </h4>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded border dark:border-gray-600 text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed">
-                          {/* Pass the dynamic job skills array into the highlighter */}
-                          {highlightKeywords(app.resumeText, job?.requiredSkills || [])}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="mt-2 text-sm text-gray-500 italic">No PDF text extracted for this applicant.</p>
-                    )}
-                  </td>
+            return (
+              <div key={app._id} className="flex flex-col md:flex-row items-start md:items-center gap-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+                
+                {/* Rank Indicator */}
+                <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-full border border-gray-100 dark:border-gray-600">
+                  {getRankBadge(index)}
+                </div>
 
-                  <td className="p-4 border-b dark:border-gray-600 align-top">
-                    <div className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-sm border
-                     ${app.matchScore >= 75 ? 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/50 dark:text-green-400' : 
-                    app.matchScore >= 50 ? 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/50 dark:text-yellow-400' : 
-                    'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-400'}`}
-                    >
-                       {app.matchScore}% Match
-                    </div>
-                  </td>
-
-                    <td className="p-4 border-b dark:border-gray-600 align-top">
-                    <select
-                      value={app.status || 'Applied'}
-                      onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                      className={`px-3 py-1 rounded text-sm font-semibold outline-none cursor-pointer border-r-8 border-transparent
-                        ${app.status === 'Offered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
-                          app.status === 'Rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
-                          app.status === 'Interview' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                          app.status === 'OA' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                          'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}
-                    >
-                      <option value="Applied" className="bg-white text-black">Applied</option>
-                      <option value="OA" className="bg-white text-black">Online Assessment</option>
-                      <option value="Interview" className="bg-white text-black">Interview</option>
-                      <option value="Offered" className="bg-white text-black">Offered</option>
-                      <option value="Rejected" className="bg-white text-black">Rejected</option>
-                    </select>
-                  </td>
+                {/* Candidate Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                    {app.applicant?.name || 'Unknown Candidate'}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{app.applicant?.email}</p>
                   
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    <span className={`px-3 py-1 rounded-full text-sm font-bold border ${app.matchScore >= 75 ? 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/50 dark:text-green-400' : 
+                      app.matchScore >= 50 ? 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/50 dark:text-yellow-400' : 
+                      'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-400'}`}>
+                      {app.matchScore || 0}% Match
+                    </span>
+                    <span className="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-bold border border-purple-100 dark:border-purple-800">
+                      CGPA: {app.applicant?.cgpa || 'N/A'}
+                    </span>
+                    <span className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm font-medium border border-gray-200 dark:border-gray-600">
+                      Applied: {new Date(app.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {/* Extracted Resume Text (Optional View) */}
+                  {app.resumeText && (
+                    <div className="mt-4 pt-4 border-t dark:border-gray-700">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Resume Snippet</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                        {highlightKeywords(app.resumeText, job?.requiredSkills || [])}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions (Resume & Status) */}
+                <div className="flex flex-col items-end gap-3 w-full md:w-auto mt-4 md:mt-0">
+                  <select
+                    value={app.status || 'Applied'}
+                    onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                    className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-bold shadow-sm outline-none cursor-pointer border
+                      ${app.status === 'Offered' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:border-green-800' : 
+                        app.status === 'Rejected' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:border-red-800' : 
+                        app.status === 'Interview' ? 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:border-purple-800' :
+                        app.status === 'OA' ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800' :
+                        'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800'}`}
+                  >
+                    <option value="Applied" className="bg-white text-gray-800 font-medium">Status: Applied</option>
+                    <option value="OA" className="bg-white text-gray-800 font-medium">Status: Online Assessment</option>
+                    <option value="Interview" className="bg-white text-gray-800 font-medium">Status: Interview</option>
+                    <option value="Offered" className="bg-white text-gray-800 font-medium">Status: Offered</option>
+                    <option value="Rejected" className="bg-white text-gray-800 font-medium">Status: Rejected</option>
+                  </select>
+
+                  <a 
+                    href={app.resumeUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold rounded-lg transition-colors text-center border border-gray-200 dark:border-gray-600"
+                  >
+                    Open Full Resume
+                  </a>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

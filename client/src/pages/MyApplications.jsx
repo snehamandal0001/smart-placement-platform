@@ -5,14 +5,11 @@ import api from '../utils/api';
 
 // --- Visual Timeline Component ---
 const StatusTimeline = ({ currentStatus }) => {
-  // Map our UI steps to the backend statuses
   const steps = ['Applied', 'Resume Shortlisted', 'Online Assessment', 'Interview', 'Final Decision'];
   
-  // Determine how far along the timeline the student is based on the backend string
   const getStepIndex = (status) => {
     switch(status) {
       case 'Applied': return 0;
-      // If they reach OA, they bypassed the 'Shortlisted' step automatically
       case 'OA': return 2; 
       case 'Interview': return 3;
       case 'Offered': return 4;
@@ -29,14 +26,11 @@ const StatusTimeline = ({ currentStatus }) => {
       {steps.map((step, index) => {
         const isCompleted = index < currentIndex;
         const isCurrent = index === currentIndex;
-        const isPending = index > currentIndex;
         
-        // Special styling for the final step if rejected
         const isFinalAndRejected = isCurrent && isRejected;
 
         return (
           <div key={step} className="relative flex items-center">
-            {/* The Timeline Dot */}
             <div className={`absolute -left-[33px] flex items-center justify-center w-4 h-4 rounded-full border-2 bg-white dark:bg-gray-800
               ${isCompleted ? 'border-green-500 bg-green-500' : 
                 isFinalAndRejected ? 'border-red-500 bg-red-500' :
@@ -50,7 +44,6 @@ const StatusTimeline = ({ currentStatus }) => {
               )}
             </div>
             
-            {/* The Step Text */}
             <span className={`text-sm font-medium
               ${isCompleted ? 'text-gray-800 dark:text-gray-200' : 
                 isFinalAndRejected ? 'text-red-600 font-bold dark:text-red-400' :
